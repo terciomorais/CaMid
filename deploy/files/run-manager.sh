@@ -1,0 +1,1 @@
+java br.ufpe.cin.middleware.facade.GlobalManagerExec -file middleware.properties  

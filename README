@@ -1,0 +1,30 @@
+Antes de executar o middleware, será necessário incluir todas as dependencias no classpath.
+Para isso, execute o maven através do arquivo pom.xml com o comando "package -U". Com isso serão gerados:
+- O arquivo jar principal em "target/cloudmiddleware-0.0.1-SNAPSHOT.jar"
+- As dependencias baixadas pelo maven em "target/alternateLocation/*.jar"
+- As outras bibliotecas que não foram incluídas nativamente pelo maven em "lib/*.{jar,so}"
+
+
+Para facilitar o uso do middleware criei uma classe principal chamada
+	"br.ufpe.cin.middleware.facade.Middleware"
+
+Execute a função main desta classe sem passar um parâmetro que ele inicia o Serviço de Nomes e um Servidor. 
+Execute a função main passando o parâmetro "-file <nome-do-arquivo-de-configuração>" que ele tentará se conectar 
+ao serviço de nomes cujas informações estão no arquivo. Um exemplo deste arquivo pode ser encontrado em 
+"src/main/resources/middleware.properties" 
+
+Como exemplo, você pode inicializar a classe remotamente incluindo todos os jars e bibliotecas no mesmo diretório
+e depois invocando o comando:
+
+java -classpath <cada-jar-separado-por-':'> br.ufpe.cin.middleware.facade.Middleware [ -file <arquivo-de-configuracao> ]
+
+Para facilitar, incluí todos os arquivos (bibliotecas nativas, jars e arquivos de configuração) na pasta deploy. 
+
+Se quiser fazer alguma modificação nos serviços que são definidos por padrão, atente para a classe LocalServiceRegistry,
+em especial para o método createDefault()
+
+É isso.
+
+
+
+ 

@@ -1,0 +1,103 @@
+<?xml version="1.0" ?>
+<project name="CloudMiddlewareD" default="deploy">
+	
+	<path id="eucalyptusweb.warfile">
+		<fileset dir="target">
+			<include name="*.war"/>
+		</fileset>
+	</path>
+
+	<property name="ssh.file" value="ssh/id_rsa"/>
+	<property name="ssh.host" value="10.0.0.2" />
+	<property name="ssh.user" value="root" />
+	<property name="ssh.pass" value="root" />
+	
+	<!--
+	<target name="init">
+		<mkdir dir="build/classes"/>
+		<mkdir dir="dist" />
+	</target>
+
+	<target name="compile" depends="init" >
+		<javac destdir="build/classes" debug="true" srcdir="src">
+			<classpath refid="compile.classpath"/>
+		</javac>
+	</target>
+	-->
+	
+	<target name="deploy" depends="package-files">
+		<!--
+		<scp remoteTofile="${ssh.user}@${ssh.host}:/root/apache-tomcat-7.0.27/webapps/EucalyptusWeb.war"
+			 password="${ssh.pass}"
+			 keyfile="${ssh.keyfile}"
+			 localFile="target/eucalyptusweb-0.0.1-SNAPSHOT.war">
+		</scp>
+		-->
+
+		<sshexec host="${ssh.host}"
+			keyfile="${ssh.file}"
+			username="${ssh.user}"
+			trust="true"
+			command="mkdir -p /root/cloudmiddleware"
+			timeout="10000000"
+			/>
+
+		<scp trust="true"
+			todir="${ssh.user}@${ssh.host}:/root/cloudmiddleware/"
+			 keyfile="${ssh.file}"
+			 localFile="deploy/cloudmiddleware.zip">
+		</scp>
+
+		<sshexec host="${ssh.host}"
+			keyfile="${ssh.file}"
+			username="${ssh.user}"
+			trust="true"
+			command="cd /root/cloudmiddleware ; unzip -o cloudmiddleware.zip ; chmod +x *.sh"
+			timeout="10000000"
+		/>
+
+	</target>
+	
+	<target name="debug-middleware" depends="deploy">
+		<!--
+		<sshexec host="172.20.16.100"
+			username="root"
+			keyfile="${ssh.keyfile}"
+			passphrase=""
+			command="rm -R /root/apache-tomcat-7.0.27/webapps/EucalyptusWeb"/>
+		-->
+	</target>
+
+	<target name="clean-files">
+		<delete>
+			<fileset dir="deploy/files">
+				<include name="*"/>
+			</fileset>
+		</delete>
+	</target>
+	
+	<target name="copy-files" depends="clean-files">
+		<copy toDir="deploy/files">
+			<fileset dir="tools/jmeter">
+				<include name="**/*"/>
+			</fileset>
+			<fileset dir="scripts">
+				<include name="*.sh"/>			
+			</fileset>
+			<fileset dir="src/main/resources">
+				<include name="middleware.properties"/>			
+			</fileset>
+		</copy>
+		<copy toDir="deploy/files" file="target/cloudmiddleware-0.0.1-SNAPSHOT-jar-with-dependencies.jar" />
+		<copy toDir="deploy/files/apache-jmeter-2.7/lib/ext" file="target/cloudmiddleware-0.0.1-SNAPSHOT-jar-with-dependencies.jar" />
+	</target>
+	
+	<target name="package-files" depends="copy-files">
+		<zip destfile="deploy/cloudmiddleware.zip">
+			<fileset dir="deploy/files">
+				<include name="**/*"/>
+			</fileset>
+		</zip>
+	</target>
+	
+</project>
