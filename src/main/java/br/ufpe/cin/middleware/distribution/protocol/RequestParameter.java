@@ -2,12 +2,12 @@ package br.ufpe.cin.middleware.distribution.protocol;
 
 import java.io.Serializable;
 
-public class RequestParameter {
+public class RequestParameter implements Serializable{
 	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 5428546673066602632L;
+	private static final long serialVersionUID = -1917177033374258899L;
 
 	private String name;
 	

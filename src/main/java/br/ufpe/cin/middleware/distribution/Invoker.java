@@ -56,9 +56,7 @@ public class Invoker {
 		}
 		try	{
 			String serviceName = this.requestMessage.getServiceName();
-			
-			System.out.println("Invoking service " + serviceName);
-			
+
 			Class<?> remoteObjectClass = registry.getRemoteObjectClass(serviceName);
 			
 //			this.remoteObject = remoteObjectClass.newInstance();
@@ -85,7 +83,6 @@ public class Invoker {
 		catch(Exception e){
 			if(iesFactory.isEnabled()) {
 				eventSource.stopTimer();
-//				System.err.println("Error in the " + invocationCounter.get() + "th interation");
 				eventSource.setException(e);
 				eventSource.notifyObservers();
 			}
@@ -121,7 +118,6 @@ public class Invoker {
 			Method[] methods = this.objDescription.getClassType().getMethods();
 			
 			for(Method method : methods) {
-				//				System.out.printf("%s::%s\n", object.getClass().getName(), methodName);
 				if(method.getName().equals(this.objDescription.getMethod().getValue())) {
 					if(roesFactory.isEnabled())	{
 						roes.startTimer();

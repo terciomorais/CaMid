@@ -1,6 +1,0 @@
-service_name=calculadora
-service_endpoint=localhost
-service_port=15001
-remote_object_class=
-naming_endpoint=localhost
-naming_port=5000

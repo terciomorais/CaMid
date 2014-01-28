@@ -132,7 +132,7 @@ public class Middleware {
 		String namingHost = config.getProperty(MiddlewareConfig.NAMING_SERVICE_HOST);
 		
 		String serverPortStr = config.getProperty(MiddlewareConfig.SERVER_PORT);
-		Integer serverPort = Integer.parseInt(serverPortStr == null ? ""+ServerHandler.PORT : serverPortStr);
+		Integer serverPort = Integer.parseInt(serverPortStr == null ? "" + 15001 : serverPortStr);
 		Boolean serverEnabled = Boolean.TRUE.toString().equals(""+config.getProperty(MiddlewareConfig.SERVER_ENABLED));
 		
 		if(namingEnabled != null && namingEnabled)

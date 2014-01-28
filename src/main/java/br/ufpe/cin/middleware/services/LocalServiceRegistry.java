@@ -1,46 +1,55 @@
 package br.ufpe.cin.middleware.services;
 
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import br.ufpe.cin.middleware.distribution.remote.Calculadora;
-import br.ufpe.cin.middleware.distribution.remote.Delay;
-import br.ufpe.cin.middleware.services.manager.monitor.local.LocalAgentRemoteObject;
-//import br.ufpe.cin.middleware.distribution.cloud.CloudProxy;
+import br.ufpe.cin.middleware.utils.PropertiesSetup;
 
 public class LocalServiceRegistry {
 
 	private Map<String, Class<?>> serviceRegistry;
+	private PropertiesSetup remoteProperties = new PropertiesSetup("/remote.properties");
 	
-	public LocalServiceRegistry()
-	{
+	public PropertiesSetup getRemoteProperties() {
+		return remoteProperties;
+	}
+
+	public LocalServiceRegistry() {
 		serviceRegistry = new TreeMap<String,Class<?>>();
 	}
 	
-	public void registerService(String serviceName, Class<?> remoteObjectClass)
-	{
+	public void registerService(String serviceName, Class<?> remoteObjectClass)	{
+		
 		this.serviceRegistry.put(serviceName, remoteObjectClass);
 	}
 	
-	public Class<?> getRemoteObjectClass(String serviceName)
-	{
+	public Class<?> getRemoteObjectClass(String serviceName) {
 		return this.serviceRegistry.get(serviceName);
 	}
 	
-	public Set<String> getAllServices()
-	{
+	public Set<String> getAllServices()	{
 		return this.serviceRegistry.keySet();
 	}
 	
-	public static LocalServiceRegistry createDefault()
-	{
-		LocalServiceRegistry registry = new LocalServiceRegistry();
-		registry.registerService(LocalAgentRemoteObject.SERVICE_NAME, LocalAgentRemoteObject.class);
-		registry.registerService(Calculadora.SERVICE_NAME, Calculadora.class);
-		registry.registerService(Delay.SERVICE_NAME, Delay.class);
-		//registry.registerService(CloudProxy.SERVICE_NAME, CloudProxy.class);
+	//Reading class service from the property file service.properties
+	public static LocalServiceRegistry createDefault(){
 		
+		LocalServiceRegistry registry = new LocalServiceRegistry();
+		@SuppressWarnings("unchecked")
+		Enumeration<String> services = (Enumeration<String>) registry.getRemoteProperties().getProperties().propertyNames();
+		while(services.hasMoreElements()){
+			String serviceName = services.nextElement();
+			String className = registry.getRemoteProperties().getProperties().getProperty(serviceName);
+			try {
+				Class<?> t = Class.forName(className);
+				registry.registerService(serviceName, t);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}	
 		return registry;
 	}
 }

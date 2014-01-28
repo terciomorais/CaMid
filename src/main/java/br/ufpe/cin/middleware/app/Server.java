@@ -11,8 +11,8 @@ public class Server {
 	 */
 	public static void main(String[] args) {
 		
-		PropertiesSetup properties	= new PropertiesSetup("/service.properties");
-		ServerHandler server		= new ServerHandler(properties); 
+		PropertiesSetup properties	= new PropertiesSetup("/container.properties");
+		ServerHandler server		= new ServerHandler(properties);
 		server.run();
 	}
 }

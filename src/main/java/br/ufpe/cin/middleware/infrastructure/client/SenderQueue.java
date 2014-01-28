@@ -25,8 +25,7 @@ public class SenderQueue {
 		return INSTANCE;
 	}
 	
-	public MethodResponseMessage doSend(Sender sender, MethodRequestMessage request)
-	{
+	public MethodResponseMessage doSend(Sender sender, MethodRequestMessage request) {
 		SenderTask task = new SenderTask(sender, request);
 		Future<MethodResponseMessage> futureMsg = executor.submit(task);
 		MethodResponseMessage response = null;

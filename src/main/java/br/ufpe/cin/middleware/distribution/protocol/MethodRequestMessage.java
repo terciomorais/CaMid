@@ -1,15 +1,15 @@
 package br.ufpe.cin.middleware.distribution.protocol;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MethodRequestMessage {
+public class MethodRequestMessage implements Serializable{
 	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 3999883611902898693L;
-
+	private static final long serialVersionUID = -8520410441049645130L;
 	private String senderHost;
 	private String host;
 	private int port;

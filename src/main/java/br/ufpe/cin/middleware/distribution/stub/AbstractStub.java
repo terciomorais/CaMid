@@ -9,12 +9,6 @@ import br.ufpe.cin.middleware.infrastructure.client.SenderQueue;
 
 public abstract class AbstractStub implements Stub{
 
-//	private static ExecutorService executor = Executors.newCachedThreadPool();
-	
-//	protected MethodResponseMessage incomingMessage = null;
-//	protected MethodRequestMessage outputMessage = null;
-	
-	
 	protected String host;
 	protected int port;
 	protected Sender sender;
@@ -52,9 +46,8 @@ public abstract class AbstractStub implements Stub{
 		return msg;
 	}
 	
-	public MethodResponseMessage sendReceive(MethodRequestMessage outputMessage)
-	{
-		MethodResponseMessage response = senderQueue.doSend(new Sender(this.host,this.port), outputMessage);	
+	public MethodResponseMessage sendReceive(MethodRequestMessage outputMessage){
+		MethodResponseMessage response = senderQueue.doSend(new Sender(this.host, this.port), outputMessage);	
 		return response;
 	}
 	

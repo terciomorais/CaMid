@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import br.ufpe.cin.middleware.naming.Linker;
 import br.ufpe.cin.middleware.naming.Service;
 import br.ufpe.cin.middleware.services.LocalServiceRegistry;
+import br.ufpe.cin.middleware.utils.Network;
 import br.ufpe.cin.middleware.utils.PropertiesSetup;
 
 public class ServerHandler implements Runnable{
@@ -20,68 +21,62 @@ public class ServerHandler implements Runnable{
 	private ExecutorService executor		= Executors.newCachedThreadPool();
 	
 	private String incomingMessage 			= "";
-	private LocalServiceRegistry registry;
-	
-	private String serviceName 				= "";
-	private int servicePort;
-	
+	private LocalServiceRegistry registry	= null;
+
+	private String containerEndPoint		= "";
+	private int containerPort;
 	private String namingEndPoint			= "";
-	private int namingPort;
-	public static final int PORT 			= 15001;
+	private int namingPort; 
 	
 	public ServerHandler(int port) {
-		this.servicePort = port;
+		this.setContainerPort(port);
 		this.binding = new Linker();
+		this.registry = LocalServiceRegistry.createDefault();
 	}
 	
-	public ServerHandler(int serverPort, String namingHost)	{
-		this.servicePort = serverPort;
-		this.binding = new Linker(namingHost, serverPort);
-	}
-	
-	public ServerHandler(int serverPort, String namingHost, int namingPort) {
-		this.servicePort = serverPort;
-		this.binding = new Linker(namingHost, namingPort);
-	}
-	
-	public ServerHandler(String serviceName, int servicePort, String namingEndPoint, int namingPort){
-		this.setServiceName(serviceName);
-		this.setServicePort(servicePort);
-		this.setNamingEndPoint(namingEndPoint);
+	public ServerHandler(int namingPort, String namingHost)	{
+		this.setNamingEndPoint(namingHost);
 		this.setNamingPort(namingPort);
+		
+		this.binding = new Linker(this.getNamingEndPoint(), this.getNamingPort());
+		this.registry = LocalServiceRegistry.createDefault();
+	}
+	
+	public ServerHandler(int containerPort, String namingHost, int namingPort) {
+		this.setContainerPort(containerPort);
+		this.setNamingEndPoint(namingHost);
+		this.setNamingPort(namingPort);
+		
+		this.binding = new Linker(this.getNamingEndPoint(), this.getNamingPort());
+		this.registry = LocalServiceRegistry.createDefault();
 	}
 
 	public ServerHandler(PropertiesSetup properties) {
-		this.setServiceName(properties.getProperties().getProperty("service_name"));
-		System.out.println(properties.getProperties().getProperty("service_port"));
-		this.setServicePort(Integer.parseInt(properties.getProperties().getProperty("service_port")));
-		this.setNamingEndPoint(properties.getProperties().getProperty("naming_endpoint"));
+		
+		this.setContainerPort(Integer.parseInt(properties.getProperties().getProperty("container_port")));
+		this.setContainerEndPoint(properties.getProperties().getProperty("container_endpoint"));
+		
 		this.setNamingPort(Integer.parseInt(properties.getProperties().getProperty("naming_port")));
-		this.binding = new Linker(this.namingEndPoint, this.namingPort);
+		this.setNamingEndPoint(properties.getProperties().getProperty("naming_endpoint"));
+		
+		this.binding = new Linker(this.getNamingEndPoint(), this.getNamingPort());
+		this.registry = LocalServiceRegistry.createDefault();
 	}
 
-	public String getServiceName() {
-		return serviceName;
+	public int getContainerPort() {
+		return containerPort;
 	}
 
-	public void setServiceName(String serviceName) {
-		this.serviceName = serviceName;
+	public void setContainerPort(int containerPort) {
+		this.containerPort = containerPort;
 	}
 
-	public int getServicePort() {
-		return servicePort;
+	public String getContainerEndPoint() {
+		return containerEndPoint;
 	}
 
-	public void setServicePort(int servicePort) {
-		this.servicePort = servicePort;
-	}
-
-	public String getNamingEndPoint() {
-		return namingEndPoint;
-	}
-
-	public void setNamingEndPoint(String namingEndPoint) {
-		this.namingEndPoint = namingEndPoint;
+	public void setContainerEndPoint(String containerEndPoint) {
+		this.containerEndPoint = Network.recoverAddress(containerEndPoint);
 	}
 
 	public int getNamingPort() {
@@ -92,41 +87,42 @@ public class ServerHandler implements Runnable{
 		this.namingPort = namingPort;
 	}
 
+	public String getNamingEndPoint() {
+		return namingEndPoint;
+	}
+
+	public void setNamingEndPoint(String namingEndPoint) {
+		this.containerEndPoint = Network.recoverAddress(namingEndPoint);
+	}
+
 	public Linker getBinding() {
 		return binding;
 	}
 
 	public void run(){
-
+		
 		//Registering the service at naming service
 		try {
-			server = new ServerSocket(this.servicePort);
+			server = new ServerSocket(this.containerPort);
 			System.out.println("Server started and listening at " + InetAddress.getByName("localhost").getHostAddress() +
-					":" + this.getServicePort());
-			
-			this.binding.bind(
-					new Service(this.getServiceName(), InetAddress.getByName("localhost").getHostAddress(), this.getServicePort()));
-//			this.binding.bind(new Service("LocalAgent", InetAddress.getByName("localhost").getHostAddress(), this.getServicePort()));
-			
-//Starting the service to wait for client requests. For each received request, a new thread is launched.
+					":" + this.getContainerPort());
+			this.publishAllServices();
+			//this.binding.bind(
+				//	new Service(this.getServiceName(), InetAddress.getByName("localhost").getHostAddress(), this.getContainerPort()));
 			while(true){
 				try {
-					//this.receivers.add(new Receiver(this.server.accept()));
-					executor.submit(new Receiver(this.server.accept(), registry));
+					executor.submit(new Receiver(this.server.accept(), this.registry));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-			
 		} 
 		catch (UnknownHostException e1) {
 			e1.printStackTrace();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		finally
-		{
+		finally{
 			try {
 				this.server.close();
 			} catch (IOException e) {
@@ -154,8 +150,7 @@ public class ServerHandler implements Runnable{
 	public void publishAllServices() throws UnknownHostException {
 		Set<String> serviceNames = this.registry.getAllServices();
 		for(String serviceName : serviceNames) {
-			Service s = new Service(serviceName, ServerHandler.PORT);
-			System.out.println("Service added: " + serviceName);
+			Service s = new Service(serviceName, this.getContainerPort());
 			this.binding.bind(s);
 		}
 	}

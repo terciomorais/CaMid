@@ -26,8 +26,7 @@ public class CalculadoraStub extends AbstractStub implements Stub {
 
 		MethodResponseMessage incomingMessage = sendReceive(outputMessage);
 
-		if(incomingMessage.getStatus().equals(MethodResponseMessage.ResponseStatus.SERVICE_EXCEPTION))
-		{
+		if(incomingMessage.getStatus().equals(MethodResponseMessage.ResponseStatus.SERVICE_EXCEPTION))	{
 			throw new RuntimeException(incomingMessage.getStatusMessage());
 		}
 		return (Integer)incomingMessage.getResponse();

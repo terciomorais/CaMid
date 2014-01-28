@@ -55,7 +55,6 @@ public class Receiver implements Runnable {
 			
 			this.invoker = new Invoker(this.receivedMessage, registry);
 			
-			System.out.println("# " + this.dispatchedMessage);
 			this.outputMessageStream = new ObjectOutputStream(this.conn.getOutputStream());
 			this.outputMessageStream.writeObject(this.dispatchedMessage);
 			
@@ -77,7 +76,6 @@ public class Receiver implements Runnable {
 
 	private void processMessage(Object object) {
 		this.receivedMessage = (MethodRequestMessage)object;
-		System.out.println("Mensagem bruta: " + this.receivedMessage);
 
 		try {
 			this.invoker = new Invoker(this.receivedMessage, registry);

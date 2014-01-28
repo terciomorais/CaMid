@@ -31,8 +31,7 @@ public class NamingServiceTask implements Runnable {
 		this.lock		= lock;
 	}
 	
-	public NamingServiceTask(Socket socket, Map<String,Set<Service>> serviceMap, ReadWriteLock lock)
-	{
+	public NamingServiceTask(Socket socket, Map<String,Set<Service>> serviceMap, ReadWriteLock lock) {
 		this.socket 	= socket;
 		this.serviceMap = serviceMap;
 		this.lock 		= lock;
@@ -41,7 +40,7 @@ public class NamingServiceTask implements Runnable {
 	public void run() {
 		ObjectInputStream in = null;
 		try {
-			System.out.println("Incoming message ...");
+			
 			in = new ObjectInputStream(socket.getInputStream());
 			this.setIncomingMassage((NamingServiceRequest) in.readObject());
 			NamingServiceResponse response = this.processMessage();
@@ -91,18 +90,15 @@ public class NamingServiceTask implements Runnable {
 					writeLock.lock();
 					Service service = this.incomingMessage.getService();
 					service.setHost(this.recoverAddress());
+					System.out.println("Registering service: " + service.getName() + " at " + service.getHost() + ":" + service.getPort());
 					Set<Service> registeredEndpoints = this.serviceMap.get(service.getName());
-					System.out.println("Serviço: " + service.getName());
+					
 					
 					if(registeredEndpoints == null)
 						registeredEndpoints = new TreeSet<Service>();
 
 					registeredEndpoints.add(service);
 					this.serviceMap.put(service.getName(), registeredEndpoints);
-					
-					for(Service s : registeredEndpoints){
-						System.out.println("	" + s.getHost() + ":" + s.getPort());
-					}
 				}
 				finally {
 					writeLock.unlock();
@@ -130,7 +126,6 @@ public class NamingServiceTask implements Runnable {
 			}
 			case SEARCH : {
 				try	{
-					System.out.println("Search initialized...");
 					readLock.lock();
 					response = new NamingServiceResponse();
 					Set<Service> registeredServices = this.serviceMap.get(
