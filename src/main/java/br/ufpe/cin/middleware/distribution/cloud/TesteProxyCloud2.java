@@ -1,13 +1,12 @@
 package br.ufpe.cin.middleware.distribution.cloud;
 
-public class TesteProxy {
+public class TesteProxyCloud2 {
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		CloudProxy cp = new CloudProxy("/cloud1.properties");
+		CloudProxy cp = new CloudProxy("/cloud2.properties");
 		cp.run();
 	}
-
 }

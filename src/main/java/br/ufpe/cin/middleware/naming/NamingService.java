@@ -11,20 +11,41 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import br.ufpe.cin.middleware.utils.PropertiesSetup;
+
 public class NamingService implements Runnable{
 	
-	public static final int PORT = 5000;
-	private ServerSocket server = null;
+	//public static final int PORT = 5000;
+	private int port 						= 5000; //default value
+	private ServerSocket server 			= null;
 	private Map<String, Set<Service>> map;
 	private ExecutorService executor;
 	private ReadWriteLock lock;
 	
+	private PropertiesSetup properties		= null;
+	
 	public NamingService() {
 		try {
-			this.server		= new ServerSocket(NamingService.PORT);
+			this.server		= new ServerSocket(this.port);
 			this.map 		= new HashMap<String, Set<Service>>();
 			this.executor 	= Executors.newCachedThreadPool();
 			this.lock 		= new ReentrantReadWriteLock();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public NamingService(String props){
+		this.setProperties(new PropertiesSetup(props));
+		
+		this.port = Integer.parseInt(this.getProperties().getProperties().getProperty("naming_port"));
+
+		try {
+			this.server		= new ServerSocket(this.port);
+			this.map		= new HashMap<String, Set<Service>>();
+			this.executor	= Executors.newCachedThreadPool();
+			this.lock		= new ReentrantReadWriteLock();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -43,8 +64,15 @@ public class NamingService implements Runnable{
 		}
 	}
 	
+	public PropertiesSetup getProperties() {
+		return this.properties;
+	}
+	private void setProperties(PropertiesSetup props) {
+		this.properties = props;
+	}
+	
 	public void run(){
-		System.out.println("Naming Service started on port " + NamingService.PORT);
+		System.out.println("Naming Service started on port " + this.port);
 		while(true){
 			this.clearAll();
 			try {
@@ -59,62 +87,5 @@ public class NamingService implements Runnable{
 	}
 	
 	private void clearAll() {
-	}
-
-/*	public Object processMessage(){
-		
-		Object obj = null;
-		this.parse();
-		
-		if (this.source == 's'){
-			System.out.println("Registering service ");
-			if (this.operation == 'r'){
-				if(!map.containsKey(this.serviceName)) {
-					Object hosts =  this.map.get(this.serviceName);
-					hosts = (hosts == null) ? new TreeSet<Service>() : hosts;
-					hosts.add(this.host);
-					this.map.put(this.serviceName, hosts);
-				}
-			} else if(this.operation == 'u') {
-				this.map.remove(this.host);
-			}
-			
-		} else if (this.source == 'c'){
-			System.out.println("Client searching a service... ");
-			
-			obj = this.search(this.serviceName);
-		}
-		return obj;
-	}*/
-	
-/*	private Object search(String sn) {
-		Object o = null;
-		
-		Set set = map.entrySet();
-		Iterator<Service> i = set.iterator();
-		while(i.hasNext()){
-			Map.Entry me = (Map.Entry)i.next();
-			if (((Service)me.getValue()).getName().equals(this.serviceName)){
-				o = me.getValue();
-				break;
-			}
-		}
-		return o; 
-	}*/
-
-/*	public void parse(){
-		this.host = new Service();
-		String[] split = this.incomingMessage.split(":");
-		this.source = this.incomingMessage.charAt(0);
-		
-		if (this.source == 's'){
-			this.host.setName(split[1]);
-			this.host.setHost(split[2]);
-			this.host.setPort(Integer.parseInt(split[3]));
-			split[4].charAt(0);
-			
-		} else if(this.source == 'c'){
-		}
-	}*/
-	
+	}	
 }

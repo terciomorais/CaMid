@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 public class NamingServiceTask implements Runnable {
 
 	private Socket socket;
-	private Map<String,Set<Service>> serviceMap;
+	private Map<String, Set<Service>> serviceMap;
 	
 	private NamingServiceRequest incomingMessage = null;
 	

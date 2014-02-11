@@ -104,11 +104,13 @@ public class ServerHandler implements Runnable{
 		//Registering the service at naming service
 		try {
 			server = new ServerSocket(this.containerPort);
-			System.out.println("Server started and listening at " + InetAddress.getByName("localhost").getHostAddress() +
+			
+			System.out.println("Server started and listening at " +
+					Network.recoverAddress("localhost") +
 					":" + this.getContainerPort());
+			
 			this.publishAllServices();
-			//this.binding.bind(
-				//	new Service(this.getServiceName(), InetAddress.getByName("localhost").getHostAddress(), this.getContainerPort()));
+			
 			while(true){
 				try {
 					executor.submit(new Receiver(this.server.accept(), this.registry));

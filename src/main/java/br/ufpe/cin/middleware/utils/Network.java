@@ -27,7 +27,7 @@ public abstract class Network {
 		
 		if(Character.isAlphabetic(address.charAt(0))){
 			try {
-				address = InetAddress.getByName(address).toString();
+				address = InetAddress.getByName(address).getHostAddress();
 			} catch (UnknownHostException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

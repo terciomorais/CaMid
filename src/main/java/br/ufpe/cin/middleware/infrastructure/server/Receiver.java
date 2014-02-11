@@ -48,10 +48,11 @@ public class Receiver implements Runnable {
 	}
 	public void run(){
 		try {
-		
+			
 			this.incomingMessageStream = new ObjectInputStream(this.conn.getInputStream());
 			Object read = this.incomingMessageStream.readObject();
 			this.processMessage(read);
+			System.out.println("Receiving message from " + this.receivedMessage.getSenderHost());
 			
 			this.invoker = new Invoker(this.receivedMessage, registry);
 			

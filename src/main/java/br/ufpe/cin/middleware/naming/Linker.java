@@ -96,6 +96,7 @@ public class Linker {
 	
 	public void unbind(Service object){
 		try {
+			@SuppressWarnings("resource")
 			Socket socket = new Socket(object.getHost(), this.namingPort);
 			DataOutputStream obj = new DataOutputStream(socket.getOutputStream());
 			obj.writeUTF(this.createMessage("u"));

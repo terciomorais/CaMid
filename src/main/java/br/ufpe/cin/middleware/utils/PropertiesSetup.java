@@ -7,6 +7,15 @@ public class PropertiesSetup {
 	private Properties properties = new Properties();
 	private String fileAddress = "";
 	
+	public PropertiesSetup(String fileAddress){
+		this.fileAddress = fileAddress;
+		try{
+			this.properties.load(getClass().getResourceAsStream(this.fileAddress));
+		} catch (Exception ioE){
+			ioE.printStackTrace();
+		}
+	}
+	
 	public Properties getProperties() {
 		return this.properties;
 	}
@@ -19,13 +28,6 @@ public class PropertiesSetup {
 		return this.fileAddress;
 	}
 	
-	public PropertiesSetup(String fileAddress){
-		this.fileAddress = fileAddress;
-		try{
-			this.properties.load(getClass().getResourceAsStream(this.fileAddress));
-		} catch (Exception ioE){
-			ioE.printStackTrace();
-		}
-	}
+
 	
 }
