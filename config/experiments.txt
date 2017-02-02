@@ -1,0 +1,11 @@
+java -Xms256m -Xmx512m -XX:+UseG1GC -cp .:./exercicio04RemotePatterns.jar br.ufpe.cin.in1118.application.client.ClassicWorkLoader 10.66.66.46 1111 100 20 100 20 10 WITH_MNG
+java -Xms256m -Xmx512m -XX:+UseG1GC -cp .:./exercicio04RemotePatterns.jar br.ufpe.cin.in1118.application.client.ClassicWorkLoader 10.66.66.46 1111 100 250 1000 250 10 WITH_MNG
+java -Xms256m -Xmx512m -XX:+UseG1GC -cp .:./exercicio04RemotePatterns.jar br.ufpe.cin.in1118.application.client.ClassicWorkLoader 10.66.66.46 1111 100 2500 5000 2500 10 WITH_MNG
+
+java -Xms256m -Xmx512m -XX:+UseG1GC -cp .:./exercicio04RemotePatterns.jar br.ufpe.cin.in1118.application.client.ClassicWorkLoader 10.66.66.46 1111 500 20 100 20 10 WITH_MNG
+java -Xms256m -Xmx512m -XX:+UseG1GC -cp .:./exercicio04RemotePatterns.jar br.ufpe.cin.in1118.application.client.ClassicWorkLoader 10.66.66.46 1111 500 250 1000 250 10 WITH_MNG
+java -Xms256m -Xmx512m -XX:+UseG1GC -cp .:./exercicio04RemotePatterns.jar br.ufpe.cin.in1118.application.client.ClassicWorkLoader 10.66.66.46 1111 500 2500 5000 2500 10 WITH_MNG
+
+java -Xms256m -Xmx512m -XX:+UseG1GC -cp .:./exercicio04RemotePatterns.jar br.ufpe.cin.in1118.application.client.ClassicWorkLoader 10.66.66.46 1111 1000 20 100 20 10 WITH_MNG
+java -Xms256m -Xmx512m -XX:+UseG1GC -cp .:./exercicio04RemotePatterns.jar br.ufpe.cin.in1118.application.client.ClassicWorkLoader 10.66.66.46 1111 1000 250 1000 250 10 WITH_MNG
+java -Xms256m -Xmx512m -XX:+UseG1GC -cp .:./exercicio04RemotePatterns.jar br.ufpe.cin.in1118.application.client.ClassicWorkLoader 10.66.66.46 1111 1000 2500 5000 2500 10 WITH_MNG

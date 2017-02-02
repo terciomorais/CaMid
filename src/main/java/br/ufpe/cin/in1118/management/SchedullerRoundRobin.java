@@ -1,0 +1,32 @@
+package br.ufpe.cin.in1118.management;
+
+import java.util.List;
+import br.ufpe.cin.in1118.utils.EndPoint;
+
+public class SchedullerRoundRobin {
+	private List<EndPoint>	endPoints	= null;
+	private int 			next		= 0;
+	
+	public SchedullerRoundRobin (List<EndPoint> endPoints){
+		this.updateEndPoint(endPoints);
+	}
+
+	private int getNext() {
+		this.next = (this.next + 1) % this.endPoints.size();
+		return this.next;
+	}
+	
+	public EndPoint getNextEndPoint(){
+		if ((this.endPoints != null) && !this.endPoints.isEmpty()){
+			return this.endPoints.get(this.getNext());
+		} else {
+			return null;
+		}
+	}
+	
+	public synchronized void updateEndPoint(List<EndPoint> endPoints){
+		if(this.endPoints != null)
+			this.endPoints.clear();
+		this.endPoints = endPoints;
+	}
+}
