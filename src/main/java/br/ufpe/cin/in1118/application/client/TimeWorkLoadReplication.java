@@ -32,7 +32,7 @@ public class TimeWorkLoadReplication {
 
 		//ramp up
 		System.out.println("\n\n[TimeWorkLoadReplication] stating ramp up");
-		for(int i = 0; i < 11; i++)
+		for(int i = 0; i < 50; i++)
 			delay.delay(1);
 
 		ExecutorService	es = Executors.newFixedThreadPool(512);
@@ -72,12 +72,13 @@ public class TimeWorkLoadReplication {
 		List<DataPoint> datapoints = new ArrayList<DataPoint>();
 		List<Double> times = new ArrayList<>();
 		int firstPos = 0;
+		times.add((double) SenderRunner.elapsedTimes.get(0).getElapsedTime());
 		
 		for (int i = 1; i < SenderRunner.elapsedTimes.size(); i++){
 			times.add((double) SenderRunner.elapsedTimes.get(i).getElapsedTime());
 			
 			if ((SenderRunner.elapsedTimes.get(i).getTimeStamp() -
-					SenderRunner.elapsedTimes.get(firstPos).getTimeStamp()) >= 60000){
+					SenderRunner.elapsedTimes.get(firstPos).getTimeStamp()) >= 10000){
 				DataPoint dp = new DataPoint(times);
 				dp.setData();
 				dp.setStatistics();
@@ -110,10 +111,10 @@ public class TimeWorkLoadReplication {
 				
 				for(int i = 0; i < datapoints.size(); i++){
 					System.out.println("[TimeWorkLoadReplication] elapsed time "
-							+ (i + 1) + " min = "
+							+ (i + 1)*10 + " min = "
 							+ datapoints.get(i).getAverage());
 
-					bw.write((i + 1) + ";" + datapoints.get(i).getAverage());
+					bw.write((i + 1)*10 + ";" + datapoints.get(i).getAverage());
 					bw.newLine();
 				}
 				bw.close();

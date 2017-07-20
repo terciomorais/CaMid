@@ -47,7 +47,6 @@ public class Invoker {
 			for(Method method : methods){
 				if(method.getName().equals(operation)
 						&& method.getParameterCount() == parameters.length){
-
 					boolean flag = true;
 					int i = 0;
 					while(flag && i < parameters.length){
@@ -122,6 +121,7 @@ public class Invoker {
 				System.out.println("[Invoker:122] Error on server side(Message no. "
 						+ this.outUnmarshalledMessage.getUniqueID()
 						+ "): Error during instance invocation. " + e.getMessage());
+				e.printStackTrace();
 				return this.outUnmarshalledMessage;
 			} catch (IllegalAccessException e) {
 				this.outUnmarshalledMessage = new Message();
@@ -131,6 +131,7 @@ public class Invoker {
 				System.out.println("[Invoker-211] Error on server side(Message no. "
 						+ this.outUnmarshalledMessage.getUniqueID()
 						+ "): " + e.getMessage());
+				e.printStackTrace();
 				return this.outUnmarshalledMessage;
 			} catch (ClassNotFoundException e) {
 				this.outUnmarshalledMessage = new Message();
@@ -140,6 +141,7 @@ public class Invoker {
 				System.out.println("[Invoker-211] Error on server side(Message no. "
 						+ this.outUnmarshalledMessage.getUniqueID()
 						+ "): " + e.getMessage());
+				e.printStackTrace();
 				return this.outUnmarshalledMessage;
 			} catch (IllegalArgumentException e) {
 				this.outUnmarshalledMessage = new Message();
@@ -149,6 +151,7 @@ public class Invoker {
 				System.out.println("[Invoker-211] Error on server side(Message no. "
 						+ this.outUnmarshalledMessage.getUniqueID()
 						+ "): " + e.getMessage());
+				e.printStackTrace();
 				return this.outUnmarshalledMessage;
 			} catch (InvocationTargetException e) {
 				this.outUnmarshalledMessage = new Message();
@@ -157,6 +160,7 @@ public class Invoker {
 				System.out.println("[Invoker-211] Error on server side(Message no. "
 						+ this.outUnmarshalledMessage.getUniqueID()
 						+ "): " + e.getMessage());
+				e.printStackTrace();
 				return this.outUnmarshalledMessage;
 			}
 		}

@@ -1,9 +1,12 @@
 package br.ufpe.cin.in1118.management;
 
+import java.io.Serializable;
 import java.util.List;
+
 import br.ufpe.cin.in1118.utils.EndPoint;
 
-public class SchedullerRoundRobin {
+public class SchedullerRoundRobin implements Serializable{
+	private static final long serialVersionUID = 7813705391836590780L;
 	private List<EndPoint>	endPoints	= null;
 	private int 			next		= 0;
 	

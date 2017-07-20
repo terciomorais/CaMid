@@ -30,7 +30,7 @@ public class Analyser {
 		//call the domain manager if necessary
 		if (this.threshold == 0 || this.paused)
 			return true;
-		System.out.println("[Analyser:33] Analysis (" + this.paused +")" + this.threshold + " > " + metric + "?");
+//		System.out.println("[Analyser:33] Analysis (" + this.paused +")" + this.threshold + " > " + metric + "?");
 		return (this.threshold > metric);
 	}
 }

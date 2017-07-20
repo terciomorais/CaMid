@@ -27,7 +27,6 @@ public class Forwarder implements IForwarder{
 			
 		} else if (nr.getEndPoints().size() > 1){
 			String[] endpoint = nr.getSchduller().getNextEndPoint().getEndpoint().split(":");
-//			System.out.println("[Forwader:29] Forwarding request to " + endpoint[0]);
 			clientObjectSender = new ClientSender(endpoint[0],
 											Integer.parseInt(endpoint[1]), incomingMessage);
 		

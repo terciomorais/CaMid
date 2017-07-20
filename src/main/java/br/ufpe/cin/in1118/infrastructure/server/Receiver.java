@@ -24,12 +24,11 @@ public class Receiver implements Runnable{
 	private Message				replyMessage	= null;
 	private Invoker				invoker			= null;
 	private EventSource			eventSource		= null;
-	
+
 	private boolean	isMonitored	= NodeManager.getInstance().isObjectMonitorEnable();
-	
+
 	public Receiver(Socket conn){
-/*		initTime = System.currentTimeMillis();*/
-		
+		/*		initTime = System.currentTimeMillis();*/
 		this.conn = conn;
 		if (this.isMonitored){
 			this.eventSource = EventSourceFactory.getInstance().createEventSource();
@@ -46,24 +45,34 @@ public class Receiver implements Runnable{
 			this.inFromClient = new ObjectInputStream(new BufferedInputStream(this.conn.getInputStream()));
 			this.receivedMessage = (Message) this.inFromClient.readObject();
 
-			this.invoker = new Invoker(this.receivedMessage);
+			if(this.receivedMessage.getHeader().getMagic().equals("management")){
+				if(this.receivedMessage.getBody().getRequestHeader().getServiceName().equals("NodeManager")){
+					//NodeManagerService nms = new NodeManagerService(this.receivedMessage);
+					//Broker.getExecutorInstance().execute(nms);
+				}
+			} else {
+				this.invoker = new Invoker(this.receivedMessage);
 
-			this.replyMessage = this.invoker.invoke();
-			this.replyMessage.setUniqueID(this.receivedMessage.getUniqueID());
-			this.replyMessage.addRouteTrack(Network.recoverAddress("localhost"));
-			this.outToClient.writeObject(this.replyMessage);
-			this.outToClient.flush();
-			
+				this.replyMessage = this.invoker.invoke();
+				this.replyMessage.setUniqueID(this.receivedMessage.getUniqueID());
+				this.replyMessage.addRouteTrack(Network.recoverAddress("localhost"));
+				this.outToClient.writeObject(this.replyMessage);
+				this.outToClient.flush();
+			}
 			//set up the event
 			if (this.isMonitored){
 				this.eventSource.stopTimer();
 				this.eventSource.getEvent().setSuccess(true);
+				this.eventSource.getEvent().setService(this.receivedMessage
+						.getBody().getRequestHeader().getServiceName());
 			}
-			
+
 		} catch (IOException ioe) {
 			if(this.isMonitored){
 				this.eventSource.getEvent().setException(ioe);
 				this.eventSource.getEvent().setSuccess(false);
+				this.eventSource.getEvent().setService(this.receivedMessage
+						.getBody().getRequestHeader().getServiceName());
 			}
 			System.out.println("[Receiver:68] Error I/O exception (Message no. "
 					+ this.replyMessage.getUniqueID()
@@ -75,8 +84,10 @@ public class Receiver implements Runnable{
 			if(this.isMonitored){
 				this.eventSource.getEvent().setException(cnfe);
 				this.eventSource.getEvent().setSuccess(false);
+				this.eventSource.getEvent().setService(this.receivedMessage
+						.getBody().getRequestHeader().getServiceName());
 			}
-			
+
 			//Preparing and responding with error
 			System.out.println("[Receiver-71] Error Class not found exception (Message no. "
 					+ this.replyMessage.getUniqueID()
@@ -90,18 +101,20 @@ public class Receiver implements Runnable{
 				this.outToClient.writeObject(this.replyMessage);
 				this.outToClient.flush();
 			} catch (IOException e) {}
-/*			System.out.println("[Receiver:95] Processing time "
+			/*			System.out.println("[Receiver:95] Processing time "
 					+ (System.currentTimeMillis() - initTime));*/
 
 		} finally {
 			//set up event
 			if(this.isMonitored){
 				this.eventSource
-					.getEvent()
-					.setSource(conn.getLocalAddress().getHostAddress() + ":" + conn.getLocalPort());
+				.getEvent()
+				.setSource(conn.getLocalAddress().getHostAddress() + ":" + conn.getLocalPort());
 				this.eventSource.notifyObservers();
+				this.eventSource.getEvent().setService(this.receivedMessage
+						.getBody().getRequestHeader().getServiceName());
 			}
-			
+
 			try {
 				this.inFromClient.close();
 				this.outToClient.close();

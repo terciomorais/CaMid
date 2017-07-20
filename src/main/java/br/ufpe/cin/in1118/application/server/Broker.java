@@ -42,16 +42,16 @@ public class Broker {
 		Broker.systemProps	= new PropertiesSetup(props);
 		this.serverHost		= Network.recoverAddress("localhost");
 		this.serverPort		= Integer.parseInt((String)
-								Broker.systemProps.getProperties().get("port_number"));
+				Broker.systemProps.getProperties().get("port_number"));
 		ROLE				= (String) Broker.systemProps.getProperties().get("role");
 
 		if(Broker.systemProps.getProperties().containsKey("frontend")){
 			String frontend = (String) Broker.systemProps.getProperties().get("frontend");
 			this.feEnabled	= frontend.equals("enabled") ? true : false;
 			this.feHost		= Network.recoverAddress((String)
-								Broker.systemProps.getProperties().get("frontend_host"));
+					Broker.systemProps.getProperties().get("frontend_host"));
 			this.fePort		= Integer.parseInt((String) 
-								Broker.systemProps.getProperties().get("frontend_port"));
+					Broker.systemProps.getProperties().get("frontend_port"));
 		}
 
 		if(!ROLE.equals("registry")){
@@ -67,6 +67,12 @@ public class Broker {
 		if(((String)Broker.systemProps.getProperties().get("system_monitor")).equals("enable")
 				|| ((String)Broker.systemProps.getProperties().get("object_monitor")).equals("enable")){
 			this.setManagerEnabled(true);
+			try {
+				Broker.registry.addService("NodeManagerService",
+						Class.forName("br.ufpe.cin.in1118.management.node.NodeManagerService"));
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -167,7 +173,6 @@ public class Broker {
 		String serverHost = "localhost";
 		int serverPort =
 				Integer.parseInt((String)Broker.systemProps.getProperties().get("port_number"));
-		
 		if(Broker.systemProps.getProperties().containsKey("frontend")){
 			String frontend = (String) Broker.systemProps.getProperties().get("frontend");
 			fe_en	= frontend.equals("enabled") ? true : false;
@@ -178,11 +183,10 @@ public class Broker {
 		}
 
 		//binding all services
-		Set<String> serviceNames	= Broker.registry.getAllServiceNames();
+		Set<String> serviceNames = Broker.registry.getAllServiceNames();
 
 		for(String serviceName : serviceNames) {
 			try {
-				
 				String className = Broker.registry.getRemoteObjectClass(serviceName).getSimpleName();
 				Class<?> clazz = Broker.getStub(className);
 				System.out.println("[Broker] Registering service "
@@ -198,8 +202,8 @@ public class Broker {
 		}
 	}
 
-	private static Class<?> getStub(String className) throws ClassNotFoundException {
-			return Class.forName("br.ufpe.cin.in1118.distribution.stub." + className + "Stub");
+	public static Class<?> getStub(String className) throws ClassNotFoundException {
+		return Class.forName("br.ufpe.cin.in1118.distribution.stub." + className + "Stub");
 	}
 
 	public static void publishService(String serviceName, Class<?> clazz, boolean fe_en, String fe_host, int fe_port, String serverHost, int serverPort){
@@ -214,43 +218,43 @@ public class Broker {
 		}
 		Method method = null;
 		//First checks if services uses Frontend services before set host and 
-		if(fe_en){
-			try {
+		try {
+			if(fe_en){
 				method = clazz.getMethod("setFeHost", new Class[]{String.class});
 				method.invoke(stub, fe_host);
 				method = clazz.getMethod("setFePort", new Class[]{Integer.TYPE});
 				method.invoke(stub, new Integer(fe_port));
 				method = clazz.getMethod("setForwarded", new Class[]{Boolean.TYPE});
 				method.invoke(stub, fe_en);
-				method = clazz.getMethod("setServiceName", new Class[]{String.class});
-				method.invoke(stub, serviceName);
-
-				method = clazz.getMethod("setHost", new Class[]{String.class});
-				method.invoke(stub, serverHost);
-
-				method = clazz.getMethod("setPort", new Class[]{Integer.TYPE});
-				method.invoke(stub, new Integer(serverPort));
-
-				method = clazz.getMethod("setObjectId", new Class[]{Integer.TYPE});
-				method.invoke(stub, new Integer(1));
-
-				method = clazz.getMethod("setClassName", new Class[]{String.class});
-				method.invoke(stub, registry.getRemoteObjectClass(serviceName).getCanonicalName());
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
 			}
+			method = clazz.getMethod("setServiceName", new Class[]{String.class});
+			method.invoke(stub, serviceName);
+
+			method = clazz.getMethod("setHost", new Class[]{String.class});
+			method.invoke(stub, serverHost);
+
+			method = clazz.getMethod("setPort", new Class[]{Integer.TYPE});
+			method.invoke(stub, new Integer(serverPort));
+
+			method = clazz.getMethod("setObjectId", new Class[]{Integer.TYPE});
+			method.invoke(stub, new Integer(1));
+
+			method = clazz.getMethod("setClassName", new Class[]{String.class});
+			method.invoke(stub, registry.getRemoteObjectClass(serviceName).getCanonicalName());
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
 		}
 		Broker.naming.bind(serviceName, stub);
 	}
-	
+
 	private void startManagement(){
 		if(this.isManagerEnable()){
 			this.setNodeManager(NodeManager.getInstance());
@@ -285,14 +289,14 @@ public class Broker {
 						+ " server running and listening on port "
 						+ this.serverPort);
 			}
-			
+
 			this.startManagement();
-			
+
 			//Preparing to bind the remote objects. For registry server it isn't realized
 			if(Broker.ROLE.equals("application")){				
 				Broker.publishAllServices();
-				
-				@SuppressWarnings("unchecked")
+
+				/*				@SuppressWarnings("unchecked")
 				Class<Stub> clazz = (Class<Stub>) Broker.getStub("NodeManagerService");
 				LocalServiceRegistry.getINSTANCE().addService("NodeManagerService", clazz);
 				Broker.publishService("NodeManagerService",
@@ -302,7 +306,7 @@ public class Broker {
 						fePort,
 						serverHost,
 						serverPort);
-
+				 */
 			}
 			while(true)
 				srh.receive(this.server.accept());

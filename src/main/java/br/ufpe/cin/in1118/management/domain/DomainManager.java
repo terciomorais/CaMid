@@ -6,11 +6,18 @@ import org.opennebula.client.Client;
 import org.opennebula.client.ClientConfigurationException;
 import org.opennebula.client.OneResponse;
 import org.opennebula.client.vm.VirtualMachine;
-
+import br.ufpe.cin.in1118.application.remoteObject.Delay;
 import br.ufpe.cin.in1118.distribution.frontend.FrontEnd;
 import br.ufpe.cin.in1118.distribution.stub.IDomainManagerStub;
+import br.ufpe.cin.in1118.infrastructure.client.ClientRequestHandler;
+import br.ufpe.cin.in1118.infrastructure.client.ClientSender;
+import br.ufpe.cin.in1118.protocols.communication.Message;
+import br.ufpe.cin.in1118.protocols.communication.MessageBody;
+import br.ufpe.cin.in1118.protocols.communication.MessageHeader;
+import br.ufpe.cin.in1118.protocols.communication.Parameter;
+import br.ufpe.cin.in1118.protocols.communication.RequestBody;
+import br.ufpe.cin.in1118.protocols.communication.RequestHeader;
 import br.ufpe.cin.in1118.services.commons.naming.NameRecord;
-import br.ufpe.cin.in1118.utils.EndPoint;
 
 public class DomainManager implements IDomainManagerStub{
 	private String ONE_AUTH		= "oneadmin:gfads!@#";
@@ -27,9 +34,8 @@ public class DomainManager implements IDomainManagerStub{
 	
 	//scale level refers to creation of replicas of VMs or remote objects
 	public boolean scaleOut(String scaleLevel){
-		System.out.println("[DomainManager:30] Somebody is asking for resources");
 		long init = System.currentTimeMillis();
-		if(!scaleLevel.equals("vm")){
+		if(scaleLevel.equals("vm")){
 			try {
 				VirtualMachine vm = new VirtualMachine(4,oneClient);
 				String xml = vm.info().getMessage();
@@ -43,17 +49,29 @@ public class DomainManager implements IDomainManagerStub{
 			    }
 				while(!inet.isReachable(180000));
 				if(inet.isReachable(10)){
-					System.out.println("time spent to be reachable " + (System.currentTimeMillis() - init)/1000 + " ms");
+					//System.out.println("time spent to be reachable " + (System.currentTimeMillis() - init)/1000 + " ms");
 					FrontEnd.getInstance().updateServices();
-					for(EndPoint ep : FrontEnd.getInstance().getService("delay").getEndPoints()){
+/*					for(EndPoint ep : FrontEnd.getInstance().getService("delay").getEndPoints()){
 						System.out.println("[DomainManager:52] Endpoint " + ep.getEndpoint());
-					}
+					}*/
 				}
 			} catch (ClientConfigurationException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		} else if(scaleLevel.equals("app")){
+			MessageHeader header	= new MessageHeader("request", 0, false, 1, 0);
+			RequestHeader reqHeader	=
+					new RequestHeader("br.ufpe.cin.in1118.management.node.NodeManagerService", 0, false, 0, "NodeManagerService", "addService");
+			Parameter[] params		= {new Parameter("serviceName", String.class, "delay"),
+					new Parameter("className", Class.class, Delay.class)};
+			RequestBody reqBody		= new RequestBody(params);
+			MessageBody body		= new MessageBody(reqHeader, reqBody, null, null);
+			Message message			= new Message(header, body);
+			
+			ClientSender sender		= new ClientSender("10.66.66.43", 1313, message);
+			ClientRequestHandler.getInstance().submit(sender);
 		} else
 			System.out.println("Selecting a new VM and starting the remote object");
 		return true;

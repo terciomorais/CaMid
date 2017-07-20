@@ -74,7 +74,7 @@ public class NodeManager {
 	}
 	
 	private void scaleOut() {
-		ClientDomainManager cdm = new ClientDomainManager("scaleout", "vm");
+		ClientDomainManager cdm = new ClientDomainManager("scaleout", "app");
 		Broker.getExecutorInstance().execute(cdm);
 	}
 

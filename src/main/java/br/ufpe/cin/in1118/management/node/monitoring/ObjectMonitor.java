@@ -23,7 +23,7 @@ import br.ufpe.cin.in1118.management.node.NodeManager;
 
 public class ObjectMonitor implements Runnable{
 
-	private int 					interval		= 60000;
+	private int 					interval		= 30000;
 	private Map<String, Observer>	objectAgents	= new HashMap<String, Observer>();
 	private String 					fileLog			= "logs/app/objectLog";
 
@@ -76,13 +76,13 @@ public class ObjectMonitor implements Runnable{
 						InvokingDataPoint dataPoint = new InvokingDataPoint(ag.getEvents());
 						this.timeseries.get(className).add(dataPoint);
 						ag.clearEvents();
-						if(!NodeManager.getInstance().getAnalyser().analyse(this.getLastDataPoint(className)
-								.getStatistics().getAverage())){
-							System.out.println("[ObjectMonitor:81] Average "
+						if(!NodeManager.getInstance().getAnalyser()
+								.analyse(this.getLastDataPoint(className).getStatistics().getAverage())){
+/*							System.out.println("[ObjectMonitor:81] Average "
 								+ this.getLastDataPoint(className)
 									.getStatistics().getAverage());
 							System.out.println("[ObjectMonitor:84] Threshold "
-									+ NodeManager.getInstance().getAnalyser().getThreshold());
+									+ NodeManager.getInstance().getAnalyser().getThreshold());*/
 							NodeManager.getInstance().alert();
 						}
 					}

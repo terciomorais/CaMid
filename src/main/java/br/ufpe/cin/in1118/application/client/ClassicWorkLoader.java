@@ -39,12 +39,11 @@ public class ClassicWorkLoader {
 		DelayStub	delay	= (DelayStub) naming.lookup("delay");
 
 		//ramp up
-		for(int i = 0; i < 20; i++){
+		for(int i = 0; i < 100; i++){
 			long b = System.currentTimeMillis();
-			delay.delay(serviceTime);
-			System.out.println("[ClassicWorkLoader] " + (System.currentTimeMillis() - b) + "ms");
+			delay.delay(10);
+//			System.out.println("[ClassicWorkLoader] " + (System.currentTimeMillis() - b) + "ms");
 		}
-
 
 		for(int tax = ini_thread; tax <= end_thread; tax += step){
 			System.out.println("     Starting sample with " + tax + " simultaneous users.");
@@ -61,30 +60,25 @@ public class ClassicWorkLoader {
 			maxValue		= 0L;
 			minValue		= 0L;
 			totalTime		= 0L;
+			ExecutorService	es	= Executors.newFixedThreadPool(tax);
 
-			for(int i = 0; i < experimentTime; i++){
-				long begin	= System.currentTimeMillis();			
-				ExecutorService	es	= Executors.newFixedThreadPool(tax);
+			long begin	= System.currentTimeMillis();
+			for(int i = 0; i < tax; i++)
+				es.execute(new SenderRunner(delay, serviceTime, experimentTime));
 
-				for (int idx = 0; idx < tax; idx++){
-					es.execute(new SenderRunner(delay, serviceTime));			
-				}
-
-				//finalizing threads
-				es.shutdown();
-				try {
-					es.awaitTermination(1L, java.util.concurrent.TimeUnit.DAYS);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-				totalTime += System.currentTimeMillis() - begin;
+			//finalizing threads
+			es.shutdown();
+			try {
+				es.awaitTermination(1L, java.util.concurrent.TimeUnit.DAYS);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
 			}
+			totalTime += System.currentTimeMillis() - begin;
 
 			//	System.out.println(" Starting statistic computation\n");
 			//Statistic process
 			if(SenderRunner.success.get() > 0){
 				maxValue = minValue = SenderRunner.elapsedTimes.get(0).getElapsedTime();
-
 				requestCount = SenderRunner.elapsedTimes.size();
 				/*
 			int count = 0;
@@ -95,14 +89,14 @@ public class ClassicWorkLoader {
 
 					if(SenderRunner.elapsedTimes.get(l).getElapsedTime() >= serviceTime){
 						minValue = SenderRunner.elapsedTimes.get(l).getElapsedTime() < minValue
-											? SenderRunner.elapsedTimes.get(l).getElapsedTime()
-											: minValue;
-						maxValue = SenderRunner.elapsedTimes.get(l).getElapsedTime() > maxValue
-											? SenderRunner.elapsedTimes.get(l).getElapsedTime()
-											: maxValue;
+								? SenderRunner.elapsedTimes.get(l).getElapsedTime()
+										: minValue;
+								maxValue = SenderRunner.elapsedTimes.get(l).getElapsedTime() > maxValue
+										? SenderRunner.elapsedTimes.get(l).getElapsedTime()
+												: maxValue;
 
-						sum+= SenderRunner.elapsedTimes.get(l).getElapsedTime();
-						squareSum += SenderRunner.elapsedTimes.get(l).getElapsedTime() * 										SenderRunner.elapsedTimes.get(l).getElapsedTime();
+										sum+= SenderRunner.elapsedTimes.get(l).getElapsedTime();
+										squareSum += SenderRunner.elapsedTimes.get(l).getElapsedTime() * 										SenderRunner.elapsedTimes.get(l).getElapsedTime();
 					} else{
 						SenderRunner.success.incrementAndGet();
 						SenderRunner.fails.incrementAndGet();
@@ -113,7 +107,8 @@ public class ClassicWorkLoader {
 			}
 
 			BufferedWriter bw = null;
-			File log = new File("logs/" + scenario + "Log" + "-" + ini_thread + "-" + end_thread + "-" + serviceTime + "ms.csv");
+			File log = new File("logs/" + scenario + "-Log" + "-" + serviceTime + "ms-"
+					+ ini_thread + "-" + end_thread + "-" + serviceTime + ".csv");
 			if (!log.exists())
 				try {
 					log.createNewFile();

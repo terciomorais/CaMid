@@ -18,7 +18,7 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 	public static List<Event>	elapsedTimes	= null;
 	private int 				serviceTime		= 1;
 	private DelayStub			delay			= null;
-	private int 				sleep			= 0;			
+	private int 				sleep			= 100;			
 	public static int 			threadCount;
 	private boolean				isByTax			= false;
 	private int					times			= 0;
@@ -29,12 +29,12 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 		SenderRunner.createMetricList();
 	}
 
-	public SenderRunner(int reqTax, int serviceTime, int times, String host, int port){
+	public SenderRunner(int reqTax, int serviceTime, int time, String host, int port){
 		this.serviceTime			= serviceTime;
 		NamingStub naming			= new NamingStub(host, port);
 		this.delay					= (DelayStub) naming.lookup("delay");
 		this.sleep					= 1000/reqTax;
-		this.times					= times;
+		this.times					= time;
 		this.serviceTime			= serviceTime;
 		SenderRunner.createMetricList();
 		this.isByTax = true;
@@ -48,6 +48,15 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 		this.times					= time;
 		SenderRunner.createMetricList();
 		this.isByTax = false;
+	}
+
+	public SenderRunner(DelayStub delay, int serviceTime, int experimentTime) {
+		this.serviceTime			= serviceTime;
+		this.delay					= delay;
+		this.times					= experimentTime;
+		this.serviceTime			= serviceTime;
+		SenderRunner.createMetricList();
+		this.isByTax = true;
 	}
 
 	public static void createMetricList(){
@@ -68,21 +77,25 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 		} else {
 			long iniTime = System.currentTimeMillis();
 			while((System.currentTimeMillis() - iniTime) < this.times)
-				this.invoke(this.sleep);
-
-			//			this.begin 	= System.currentTimeMillis();
-			//			this.delay.delay(this.serviceTime);
-			//			this.end = System.currentTimeMillis();
-			//			if(this.delay.getReply().getStatus().equals(Message.ResponseStatus.SUCCESS)){
-			//				SenderRunner.elapsedTimes.add(end - begin);
-			//				SenderRunner.success.incrementAndGet();
-			//			} else
-			//				SenderRunner.fails.incrementAndGet();
+				this.invoke();
 		}
 	}
 	
-	private void invoke(int sleep){
+	private void invoke() {
+		Event event = new Event();
+		event.setStartTime(System.currentTimeMillis());
+		this.delay.delay(this.serviceTime);
+		event.setEndTime(System.currentTimeMillis());
+		event.setSuccess(this.delay.getReply().getStatus().equals(Message.ResponseStatus.SUCCESS));
+		SenderRunner.elapsedTimes.add(event);
+		
+		if(event.isSuccess())			
+			SenderRunner.success.incrementAndGet();
+		else
+			SenderRunner.fails.incrementAndGet();		
+	}
 
+	private void invoke(int sleep){
 		Event event = new Event();
 		event.setStartTime(System.currentTimeMillis());
 		this.delay.delay(this.serviceTime);
