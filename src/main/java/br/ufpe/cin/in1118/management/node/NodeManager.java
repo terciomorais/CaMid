@@ -64,20 +64,18 @@ public class NodeManager {
 		return this.analyser;
 	}
 	
-	public void alert(){
+	//TODO Change communication to messaging
+	public void alert(short alert){
 		if(Broker.getSystemProps().getProperties().containsKey("dm_host")
 				&& Broker.getSystemProps().getProperties().containsKey("dm_port")){
 			this.analyser.setPaused(true);
-			this.scaleOut();
+			ClientDomainManager cdm = new ClientDomainManager("scale", alert);
+			//ClientDomainManager cdm = new ClientDomainManager("scaleup", "app");
+			Broker.getExecutorInstance().execute(cdm);
 		} else 
 			System.out.println("[NodeManager:73] OVERLOAD ALERT WITHOUT ACTION");
 	}
 	
-	private void scaleOut() {
-		ClientDomainManager cdm = new ClientDomainManager("scaleout", "app");
-		Broker.getExecutorInstance().execute(cdm);
-	}
-
 	public void start() {
 		if(this.isSysMonitorEnabled())
 			Broker.getExecutorInstance().execute(this.getSystemMonitor());

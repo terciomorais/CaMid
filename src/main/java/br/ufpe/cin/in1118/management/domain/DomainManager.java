@@ -6,6 +6,7 @@ import org.opennebula.client.Client;
 import org.opennebula.client.ClientConfigurationException;
 import org.opennebula.client.OneResponse;
 import org.opennebula.client.vm.VirtualMachine;
+
 import br.ufpe.cin.in1118.application.remoteObject.Delay;
 import br.ufpe.cin.in1118.distribution.frontend.FrontEnd;
 import br.ufpe.cin.in1118.distribution.stub.IDomainManagerStub;
@@ -32,6 +33,11 @@ public class DomainManager implements IDomainManagerStub{
 		}
 	}
 	
+	@Override
+	public boolean scale(String action, short alertType) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	//scale level refers to creation of replicas of VMs or remote objects
 	public boolean scaleOut(String scaleLevel){
 		long init = System.currentTimeMillis();

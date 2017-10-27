@@ -76,14 +76,15 @@ public class ObjectMonitor implements Runnable{
 						InvokingDataPoint dataPoint = new InvokingDataPoint(ag.getEvents());
 						this.timeseries.get(className).add(dataPoint);
 						ag.clearEvents();
-						if(!NodeManager.getInstance().getAnalyser()
-								.analyse(this.getLastDataPoint(className).getStatistics().getAverage())){
+						if(NodeManager.getInstance().getAnalyser()
+								.analyse(this.getLastDataPoint(className).getStatistics().getAverage()) != 0){
 /*							System.out.println("[ObjectMonitor:81] Average "
 								+ this.getLastDataPoint(className)
 									.getStatistics().getAverage());
 							System.out.println("[ObjectMonitor:84] Threshold "
 									+ NodeManager.getInstance().getAnalyser().getThreshold());*/
-							NodeManager.getInstance().alert();
+							NodeManager.getInstance().alert(NodeManager.getInstance()
+									.getAnalyser().analyse(this.getLastDataPoint(className).getStatistics().getAverage()));
 						}
 					}
 

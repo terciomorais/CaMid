@@ -22,6 +22,15 @@ public class DomainManagerStub extends Stub implements IDomainManagerStub{
 		return (boolean) this.reply.getResponse();
 	}
 
+	public boolean scale(String action, short alertType) {
+		class Local {};
+		Class<?> clazz = Local.class;
+		Serializable[] paramValues = {action, alertType};
+		super.prepare(clazz, paramValues);
+		this.reply = this.request();
+		return (boolean) this.reply.getResponse();
+	}
+	
 	@Override
 	public void addService(String service, NameRecord record) {
 		class Local {};

@@ -1,7 +1,6 @@
 package tests;
 
 import java.net.InetAddress;
-
 import org.opennebula.client.Client;
 import org.opennebula.client.ClientConfigurationException;
 import org.opennebula.client.OneResponse;
