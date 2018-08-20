@@ -11,13 +11,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import br.ufpe.cin.middleware.distribution.remote.Delay;
-import br.ufpe.cin.middleware.distribution.stub.DelayStub;
-import br.ufpe.cin.middleware.facade.Middleware;
-import br.ufpe.cin.middleware.facade.MiddlewareConfig;
-import br.ufpe.cin.middleware.naming.NamingService;
-import br.ufpe.cin.middleware.naming.Service;
-import br.ufpe.cin.middleware.naming.ServiceCreator;
+import br.ufpe.cin.camid.distribution.skeleton.Delay;
+import br.ufpe.cin.camid.distribution.stub.DelayStub;
+import br.ufpe.cin.camid.facade.Middleware;
+import br.ufpe.cin.camid.facade.MiddlewareConfig;
+import br.ufpe.cin.camid.service.naming.NamingService;
+import br.ufpe.cin.camid.service.naming.Service;
+import br.ufpe.cin.camid.service.naming.ServiceCreator;
 
 public class StatisticsClient 
 {
@@ -104,7 +104,7 @@ public class StatisticsClient
 		//Default values 
 		host = host == null ? "127.0.0.1" : host;
 		System.out.println("Host: " + host);
-		port = port == null ? NamingService.PORT : port;
+//		port = port == null ? NamingService.PORT : port;
 		System.out.println("Port: " + port);
 		load = load == null ? 1000 : load;
 		System.out.println("Load: " + load);

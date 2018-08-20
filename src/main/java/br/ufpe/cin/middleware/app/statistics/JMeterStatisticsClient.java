@@ -7,7 +7,7 @@ import org.apache.jmeter.protocol.java.sampler.AbstractJavaSamplerClient;
 import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
 import org.apache.jmeter.samplers.SampleResult;
 
-import br.ufpe.cin.middleware.distribution.stub.DelayStub;
+import br.ufpe.cin.camid.distribution.stub.DelayStub;
 
 public class JMeterStatisticsClient extends AbstractJavaSamplerClient{
 
@@ -107,7 +107,4 @@ public class JMeterStatisticsClient extends AbstractJavaSamplerClient{
             }
         }
     }
-	
-	
-	
 }

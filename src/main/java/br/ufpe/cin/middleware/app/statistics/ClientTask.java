@@ -3,7 +3,7 @@ package br.ufpe.cin.middleware.app.statistics;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
-import br.ufpe.cin.middleware.distribution.stub.DelayStub;
+import br.ufpe.cin.camid.distribution.stub.DelayStub;
 
 class ClientTask implements Callable<Boolean>
 {

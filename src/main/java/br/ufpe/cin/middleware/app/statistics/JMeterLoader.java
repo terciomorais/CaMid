@@ -1,11 +1,11 @@
 package br.ufpe.cin.middleware.app.statistics;
 
-import br.ufpe.cin.middleware.distribution.remote.Delay;
-import br.ufpe.cin.middleware.distribution.stub.DelayStub;
-import br.ufpe.cin.middleware.facade.Middleware;
-import br.ufpe.cin.middleware.facade.MiddlewareConfig;
-import br.ufpe.cin.middleware.naming.Service;
-import br.ufpe.cin.middleware.naming.ServiceCreator;
+import br.ufpe.cin.camid.distribution.skeleton.Delay;
+import br.ufpe.cin.camid.distribution.stub.DelayStub;
+import br.ufpe.cin.camid.facade.Middleware;
+import br.ufpe.cin.camid.facade.MiddlewareConfig;
+import br.ufpe.cin.camid.service.naming.Service;
+import br.ufpe.cin.camid.service.naming.ServiceCreator;
 
 public class JMeterLoader {
 	

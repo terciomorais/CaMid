@@ -4,7 +4,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import br.ufpe.cin.middleware.services.manager.monitor.local.qos.util.Metric;
+import br.ufpe.cin.camid.utils.metrics.Metric;
 
 public class ResponseTimeMetricTest {
 

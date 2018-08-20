@@ -1,6 +1,6 @@
 package br.ufpe.cin.middleware.distribution;
 
-import br.ufpe.cin.middleware.distribution.qos.events.InvokerEventSourceFactory;
+import br.ufpe.cin.camid.management.monitoring.events.InvokerEventSourceFactory;
 import br.ufpe.cin.middleware.distribution.qos.observers.InvokerRequestsPerSecondObserver;
 import br.ufpe.cin.middleware.distribution.qos.observers.InvokerResponseTimeObserver;
 import br.ufpe.cin.middleware.distribution.qos.observers.RemoteObjectRequestsPerSecondObserver;
