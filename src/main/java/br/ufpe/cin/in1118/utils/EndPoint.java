@@ -6,7 +6,8 @@ public class EndPoint implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private String	host;
 	private int		port;
-	private String endpoint;
+	private String	endpoint;
+	private String	cloud;
 	
 	public EndPoint(String endpoint) {
 		String[] split = endpoint.split(":");
@@ -26,6 +27,14 @@ public class EndPoint implements Serializable{
 		return this.port;
 	}
 	
+	public String getCloud() {
+		return cloud;
+	}
+
+	public void setCloud(String cloud) {
+		this.cloud = cloud;
+	}
+
 	public boolean equals(Object obj){
 		if (this == obj) return true;
 		else if(obj != null 

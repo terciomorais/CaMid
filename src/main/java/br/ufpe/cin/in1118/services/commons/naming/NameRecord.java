@@ -13,10 +13,10 @@ import br.ufpe.cin.in1118.utils.EndPoint;
 
 public class NameRecord implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	private Set<EndPoint>	endpoints		= Collections.synchronizedSet(new HashSet<EndPoint>());
-	private Stub			stub			= null;
-	private SchedullerRoundRobin schduller	= null;
+	private static final long serialVersionUID 	= 1L;
+	private Set<EndPoint>			endpoints	= Collections.synchronizedSet(new HashSet<EndPoint>());
+	private Stub					stub		= null;
+	private SchedullerRoundRobin	schduller	= null;
 	
 	public NameRecord(Stub stub){
 		this.setStub(stub);

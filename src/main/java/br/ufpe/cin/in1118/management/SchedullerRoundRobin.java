@@ -6,9 +6,9 @@ import java.util.List;
 import br.ufpe.cin.in1118.utils.EndPoint;
 
 public class SchedullerRoundRobin implements Serializable{
-	private static final long serialVersionUID = 7813705391836590780L;
-	private List<EndPoint>	endPoints	= null;
-	private int 			next		= 0;
+	private static final long	serialVersionUID	= 7813705391836590780L;
+	private List<EndPoint>		endPoints			= null;
+	private int 				next				= 0;
 	
 	public SchedullerRoundRobin (List<EndPoint> endPoints){
 		this.updateEndPoint(endPoints);

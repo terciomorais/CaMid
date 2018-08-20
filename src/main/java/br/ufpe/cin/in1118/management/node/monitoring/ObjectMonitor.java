@@ -27,7 +27,8 @@ public class ObjectMonitor implements Runnable{
 	private Map<String, Observer>	objectAgents	= new HashMap<String, Observer>();
 	private String 					fileLog			= "logs/app/objectLog";
 
-	private Map<String, List<InvokingDataPoint>> timeseries = new ConcurrentHashMap<String, List<InvokingDataPoint>>();
+	private Map<String, List<InvokingDataPoint>>
+									timeseries 		= new ConcurrentHashMap<String, List<InvokingDataPoint>>();
 
 	public ObjectMonitor(){
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
