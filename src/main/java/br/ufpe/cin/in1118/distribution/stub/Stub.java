@@ -111,7 +111,7 @@ public abstract class Stub implements Serializable{
 			this.invocation.setHostIP(this.getHost());
 			this.invocation.setPort(this.getPort());
 		}
-		
+		this.invocation.setSourceIP("localhost");
 		this.invocation.setObjectID(this.getObjectId());
 		this.invocation.setServiceName(this.getServiceName());
 		this.invocation.setRemoteClassName(this.getClassName());

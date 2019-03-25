@@ -26,9 +26,10 @@ public class Requestor implements Serializable{
 		RequestHeader	requestHeader	= new RequestHeader(
 											inv.getRemoteClassName(),
 											0,
-											inv.isHasReturn(),
+											inv.hasReturn(),
 											0,
 											inv.getServiceName(),
+											inv.getSourceIP(),
 											inv.getMethodName());
 		RequestBody		requestBody 	= new RequestBody(inv.getParameters());
 		
@@ -45,7 +46,7 @@ public class Requestor implements Serializable{
 		reply.setStatus(replyUnmarshalled.getStatus());
 		reply.setStatusMessage(replyUnmarshalled.getStatusMessage());
 		
-		if(inv.isHasReturn())	
+		if(inv.hasReturn())	
 			reply.setResponse((Serializable)replyUnmarshalled.getBody().getReplyBody().getOperationResult());
 		return reply;
 	}

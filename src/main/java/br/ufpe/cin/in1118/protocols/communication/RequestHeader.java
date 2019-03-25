@@ -5,20 +5,22 @@ import java.io.Serializable;
 public class RequestHeader implements Serializable{
 
 	private static final long serialVersionUID = -2862742090482565938L;
-	private String 				context;
-	private int 				requestId;
-	private String				serviceName;
-	private boolean				responseExpected;
-	private int					objectKey;
-	private String				operation;
+	private String	context;
+	private int 	requestId;
+	private String	serviceName;
+	private String	sourceEndPoint;
+	private boolean	responseExpected;
+	private int		objectKey;
+	private String	operation;
 
-	public RequestHeader(String context, int requestId, boolean responseExpected, int objectKey, String serviceName, String operation) {
+	public RequestHeader(String context, int requestId, boolean responseExpected, int objectKey, String serviceName, String source, String operation) {
 		this.setContext(context);
 		this.setRequestId(requestId);
 		this.setResponseExpected(responseExpected);
 		this.setObjectKey(objectKey);
 		this.setOperation(operation);
 		this.setServiceName(serviceName);
+		this.setSourceEndPoint(source);
 	}
 
 	public String getContext() {
@@ -43,6 +45,14 @@ public class RequestHeader implements Serializable{
 
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
+	}
+
+	public String getSourceEndPoint() {
+		return this.sourceEndPoint;
+	}
+
+	public void setSourceEndPoint(String source) {
+		this.sourceEndPoint = source;
 	}
 
 	public boolean isResponseExpected() {

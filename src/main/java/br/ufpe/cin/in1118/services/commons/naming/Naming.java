@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import br.ufpe.cin.in1118.application.server.Broker;
-import br.ufpe.cin.in1118.distribution.stub.DomainManagerStub;
+import br.ufpe.cin.in1118.distribution.stub.ResourceControllerStub;
 import br.ufpe.cin.in1118.distribution.stub.Stub;
 import br.ufpe.cin.in1118.utils.EndPoint;
 import br.ufpe.cin.in1118.utils.Network;
@@ -18,7 +18,7 @@ public class Naming implements INaming {
 	private Map<String, NameRecord>	repository			= new ConcurrentHashMap<String, NameRecord>();
 	private String					feHost				= "localhost";
 	private boolean					isFrontEndEnabled	= false;
-	private DomainManagerStub		domainManager		= null;
+	private ResourceControllerStub	domainManager		= null;
 	
 	private Naming(){
 		if(Broker.getSystemProps().getProperties().containsKey("frontend")
@@ -60,7 +60,7 @@ public class Naming implements INaming {
 				&& this.isFrontEndEnabled
 				&& Network.isReachable(this.feHost, 5000)){
 			if(this.domainManager == null)
-				this.domainManager = (DomainManagerStub) this.lookup("management");
+				this.domainManager = (ResourceControllerStub) this.lookup("management");
 			DispatcherThread dispatcher =
 					new DispatcherThread(this.domainManager, serviceName, this.repository);
 			Broker.getExecutorInstance().execute(dispatcher);

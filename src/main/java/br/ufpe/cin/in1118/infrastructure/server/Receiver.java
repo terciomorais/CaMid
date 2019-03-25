@@ -41,17 +41,18 @@ public class Receiver implements Runnable{
 	@Override
 	public void run() {
 		try {
-			this.outToClient = new ObjectOutputStream(new BufferedOutputStream(conn.getOutputStream()));
-			this.inFromClient = new ObjectInputStream(new BufferedInputStream(this.conn.getInputStream()));
-			this.receivedMessage = (Message) this.inFromClient.readObject();
-
+			this.outToClient		= new ObjectOutputStream(new BufferedOutputStream(conn.getOutputStream()));
+			this.inFromClient		= new ObjectInputStream(new BufferedInputStream(this.conn.getInputStream()));
+			this.receivedMessage	= (Message) this.inFromClient.readObject();
+			String magic			= this.receivedMessage.getHeader().getMagic();
 			if(this.receivedMessage.getHeader().getMagic().equals("management")){
 				if(this.receivedMessage.getBody().getRequestHeader().getServiceName().equals("NodeManager")){
 					//NodeManagerService nms = new NodeManagerService(this.receivedMessage);
 					//Broker.getExecutorInstance().execute(nms);
 				}
 			} else {
-				this.invoker = new Invoker(this.receivedMessage);
+				Message msg = this.receivedMessage;
+				this.invoker = new Invoker(msg);
 
 				this.replyMessage = this.invoker.invoke();
 				this.replyMessage.setUniqueID(this.receivedMessage.getUniqueID());
@@ -59,12 +60,14 @@ public class Receiver implements Runnable{
 				this.outToClient.writeObject(this.replyMessage);
 				this.outToClient.flush();
 			}
+
 			//set up the event
 			if (this.isMonitored){
 				this.eventSource.stopTimer();
+				this.eventSource.getEvent().setContext(magic);
 				this.eventSource.getEvent().setSuccess(true);
-				this.eventSource.getEvent().setService(this.receivedMessage
-						.getBody().getRequestHeader().getServiceName());
+				this.eventSource.getEvent().setService(this.receivedMessage.getBody().getRequestHeader().getServiceName());
+				this.eventSource.getEvent().setSourceEndPoint(this.receivedMessage.getBody().getRequestHeader().getSourceEndPoint());
 			}
 
 		} catch (IOException ioe) {
@@ -90,9 +93,9 @@ public class Receiver implements Runnable{
 
 			//Preparing and responding with error
 			System.out.println("[Receiver-71] Error Class not found exception (Message no. "
-					+ this.replyMessage.getUniqueID()
-					+ "): " + cnfe.getMessage());
-			//cnfe.printStackTrace();
+				+ this.replyMessage.getUniqueID() + "): "
+				+ cnfe.getMessage());
+			cnfe.printStackTrace();
 			this.replyMessage = new Message();
 			this.replyMessage.setStatus(Message.ResponseStatus.RECEPTION_EXCEPTION);
 			this.replyMessage.setStatusMessage("Class not found by Receiver.");
@@ -107,9 +110,10 @@ public class Receiver implements Runnable{
 		} finally {
 			//set up event
 			if(this.isMonitored){
-				this.eventSource
-				.getEvent()
-				.setSource(conn.getLocalAddress().getHostAddress() + ":" + conn.getLocalPort());
+				// this.eventSource.getEvent()
+				// 	.setSourceEndPoint(conn.getLocalAddress()
+				// 	.getHostAddress() + ":" + conn.getLocalPort());
+				
 				this.eventSource.notifyObservers();
 				this.eventSource.getEvent().setService(this.receivedMessage
 						.getBody().getRequestHeader().getServiceName());

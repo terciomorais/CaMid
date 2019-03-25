@@ -22,54 +22,84 @@ import br.ufpe.cin.in1118.utils.PropertiesSetup;
 
 public class Broker {
 
-	private ServerSocket 			server			= null;
-	private ServerRequestHandler	srh				= ServerRequestHandler.getInstance();
-	private String					serverHost		= "localhost";
-	private int						serverPort		= 1313;
-	private static PropertiesSetup	systemProps		= null;
-	private static LocalServiceRegistry	registry	= null;
-	private static String 			ROLE			= "application";
-	private static NamingStub		naming			= null;
-	private NodeManager				nodeManager		= null;
-	private boolean					managerEnabled	= false;
-	private boolean					feEnabled		= false;
-	private String 					feHost			= null;
-	private int						fePort			= 1212;
+	private ServerSocket 				server			= null;
+	private ServerRequestHandler		srh				= ServerRequestHandler.getInstance();
+	private String						serverHost		= "localhost";
+	private int							serverPort		= 1313;
+	private static PropertiesSetup		systemProps		= null;
+	private static LocalServiceRegistry	registry		= null;
+	private static String 				ROLE			= "application";
+	private static NamingStub			naming			= null;
+	private NodeManager					nodeManager		= null;
+	private boolean						managerEnabled	= false;
+	private boolean						feEnabled		= false;
+	private String 						feHost			= null;
+	private int							fePort			= 1212;
 
 	private static ExecutorService	executor		= Executors.newFixedThreadPool(256);
 
 	public Broker(String props){
 		Broker.systemProps	= new PropertiesSetup(props);
 		this.serverHost		= Network.recoverAddress("localhost");
-		this.serverPort		= Integer.parseInt((String)
-				Broker.systemProps.getProperties().get("port_number"));
+		this.serverPort		= Integer.parseInt((String)Broker.systemProps.getProperties().get("port_number"));
 		ROLE				= (String) Broker.systemProps.getProperties().get("role");
 
-		if(Broker.systemProps.getProperties().containsKey("frontend")){
+		if(ROLE.equals("frontend")){
+			
+			String host		= (String) Broker.systemProps.getProperties().get("naming_host");
+			int	portNumber	= Integer.parseInt((String) Broker.systemProps.getProperties().get("naming_port"));
+			this.feHost		= this.serverHost;
+			this.fePort		= this.serverPort;
+
+			Broker.registry	= LocalServiceRegistry.createDefault();
+			Broker.naming	= new NamingStub(host, portNumber);
+
+		} else if(ROLE.equals("registry")){
 			String frontend = (String) Broker.systemProps.getProperties().get("frontend");
 			this.feEnabled	= frontend.equals("enabled") ? true : false;
-			this.feHost		= Network.recoverAddress((String)
-					Broker.systemProps.getProperties().get("frontend_host"));
-			this.fePort		= Integer.parseInt((String) 
-					Broker.systemProps.getProperties().get("frontend_port"));
-		}
+			this.feHost		= Network.recoverAddress((String) Broker.systemProps.getProperties().get("frontend_host"));
+			this.fePort		= Integer.parseInt((String) Broker.systemProps.getProperties().get("frontend_port"));
 
-		if(!ROLE.equals("registry")){
 			Broker.registry	= LocalServiceRegistry.createDefault();
-			String host		= (String) Broker.systemProps.getProperties().get("naming_host");
-			int	portNumber	= 
-					Integer.parseInt((String) Broker.systemProps.getProperties().get("naming_port"));
+			Broker.naming = new NamingStub(this.serverHost, this.serverPort);
 
+		} else {
+			String frontend = (String) Broker.systemProps.getProperties().get("frontend");
+			this.feEnabled	= frontend.equals("enabled") ? true : false;
+			this.feHost		= Network.recoverAddress((String) Broker.systemProps.getProperties().get("frontend_host"));
+			this.fePort		= Integer.parseInt((String)	Broker.systemProps.getProperties().get("frontend_port"));
+
+			String host		= (String) Broker.systemProps.getProperties().get("naming_host");
+			int	portNumber	= Integer.parseInt((String) Broker.systemProps.getProperties().get("naming_port"));
+
+			Broker.registry	= LocalServiceRegistry.createDefault();
 			Broker.naming	= new NamingStub(host, portNumber);
 		}
+
+		// if (ROLE.equals("application") || ROLE.equals("registry")){//(Broker.systemProps.getProperties().containsKey("frontend")){
+		// 	String frontend = (String) Broker.systemProps.getProperties().get("frontend");
+		// 	this.feEnabled	= frontend.equals("enabled") ? true : false;
+		// 	this.feHost		= Network.recoverAddress((String)
+		// 			Broker.systemProps.getProperties().get("frontend_host"));
+		// 	this.fePort		= Integer.parseInt((String) 
+		// 			Broker.systemProps.getProperties().get("frontend_port"));
+		// }
+
+		// if(!ROLE.equals("registry")){
+		// 	Broker.registry	= LocalServiceRegistry.createDefault();
+		// 	String host		= (String) Broker.systemProps.getProperties().get("naming_host");
+		// 	int	portNumber	= 
+		// 			Integer.parseInt((String) Broker.systemProps.getProperties().get("naming_port"));
+
+		// 	Broker.naming	= new NamingStub(host, portNumber);
+		// }
 
 		//Enabling management
 		if(((String)Broker.systemProps.getProperties().get("system_monitor")).equals("enable")
 				|| ((String)Broker.systemProps.getProperties().get("object_monitor")).equals("enable")){
 			this.setManagerEnabled(true);
 			try {
-				Broker.registry.addService("NodeManagerService",
-						Class.forName("br.ufpe.cin.in1118.management.node.NodeManagerService"));
+				Broker.registry.addService("NodeManagerService", Class.forName("br.ufpe.cin.in1118.management.node.NodeManagerService"));
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -121,7 +151,7 @@ public class Broker {
 	}
 
 	public boolean isManagerEnable() {
-		return managerEnabled;
+		return this.managerEnabled;
 	}
 
 	public void setManagerEnabled(boolean managerEnabled) {
@@ -167,19 +197,17 @@ public class Broker {
 	}
 
 	public static void publishAllServices() {
-		boolean fe_en = false;
-		String fe_host = "localhost";
-		int fe_port = 1313;
-		String serverHost = "localhost";
-		int serverPort =
-				Integer.parseInt((String)Broker.systemProps.getProperties().get("port_number"));
+		boolean	fe_en		= false;
+		String	fe_host		= "localhost";
+		int		fe_port		= 1313;
+		String	serverHost	= "localhost";
+
+		int serverPort = Integer.parseInt((String)Broker.systemProps.getProperties().get("port_number"));
 		if(Broker.systemProps.getProperties().containsKey("frontend")){
 			String frontend = (String) Broker.systemProps.getProperties().get("frontend");
 			fe_en	= frontend.equals("enabled") ? true : false;
-			fe_host	=
-					Network.recoverAddress((String) Broker.systemProps.getProperties().get("frontend_host"));
-			fe_port	=
-					Integer.parseInt((String) Broker.systemProps.getProperties().get("frontend_port"));
+			fe_host	= Network.recoverAddress((String) Broker.systemProps.getProperties().get("frontend_host"));
+			fe_port	= Integer.parseInt((String) Broker.systemProps.getProperties().get("frontend_port"));
 		}
 
 		//binding all services
@@ -210,10 +238,19 @@ public class Broker {
 		Stub stub = null;
 
 		try {
-			stub = (Stub) clazz.newInstance();
+			stub = (Stub) clazz.getDeclaredConstructor().newInstance();
+			//stub = (Stub) clazz.newInstance();
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
 		Method method = null;
@@ -223,7 +260,7 @@ public class Broker {
 				method = clazz.getMethod("setFeHost", new Class[]{String.class});
 				method.invoke(stub, fe_host);
 				method = clazz.getMethod("setFePort", new Class[]{Integer.TYPE});
-				method.invoke(stub, new Integer(fe_port));
+				method.invoke(stub, Integer.valueOf(fe_port));
 				method = clazz.getMethod("setForwarded", new Class[]{Boolean.TYPE});
 				method.invoke(stub, fe_en);
 			}
@@ -234,10 +271,10 @@ public class Broker {
 			method.invoke(stub, serverHost);
 
 			method = clazz.getMethod("setPort", new Class[]{Integer.TYPE});
-			method.invoke(stub, new Integer(serverPort));
+			method.invoke(stub, Integer.valueOf(serverPort));
 
 			method = clazz.getMethod("setObjectId", new Class[]{Integer.TYPE});
-			method.invoke(stub, new Integer(1));
+			method.invoke(stub, Integer.valueOf(1));
 
 			method = clazz.getMethod("setClassName", new Class[]{String.class});
 			method.invoke(stub, registry.getRemoteObjectClass(serviceName).getCanonicalName());
@@ -269,10 +306,8 @@ public class Broker {
 				EventSourceFactory.getInstance().registerObserver(Naming.class.getName(), new Agent());
 			else {
 				Set<String> services = Broker.registry.getAllServiceNames();	
-				for(Iterator<String> it = services.iterator(); it.hasNext();)
-					EventSourceFactory
-					.getInstance()
-					.registerObserver(Broker.registry.getRemoteObjectClass(it.next()).getName(), new Agent());
+				for(String str : services)
+					EventSourceFactory.getInstance().registerObserver(Broker.registry.getRemoteObjectClass(str).getName(), new Agent(str));
 			}
 
 			this.nodeManager.getObjectMonitor().setAgents(EventSourceFactory.getInstance().getObservers());
@@ -328,5 +363,3 @@ public class Broker {
 			}
 	}
 }
-
-

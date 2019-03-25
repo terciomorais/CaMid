@@ -1,0 +1,50 @@
+{
+    // Use o IntelliSense para aprender sobre possíveis atributos.
+    // Passe o mouse para ver as descrições dos atributos existentes.
+    // Para obter mais informações, visite: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - ReqTaxWorkLoader",
+            "request": "launch",
+            "mainClass": "br.ufpe.cin.in1118.application.client.ReqTaxWorkLoader",
+            "projectName": "exercicio04RemotePatterns",
+            "args": "localhost 1111 10 1 3 1 100 100 ? MNG_ON"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - ClientDelay",
+            "request": "launch",
+            "mainClass": "br.ufpe.cin.in1118.application.client.ClientDelay",
+            "projectName": "exercicio04RemotePatterns"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - NameServer",
+            "request": "launch",
+            "mainClass": "br.ufpe.cin.in1118.application.server.NameServer",
+            "projectName": "exercicio04RemotePatterns"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - ServerApplication",
+            "request": "launch",
+            "mainClass": "br.ufpe.cin.in1118.application.server.ServerApplication",
+            "projectName": "exercicio04RemotePatterns"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - CloudFrontEndServer",
+            "request": "launch",
+            "mainClass": "br.ufpe.cin.in1118.application.server.CloudFrontEndServer",
+            "projectName": "exercicio04RemotePatterns"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch) - Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        }
+    ]
+}

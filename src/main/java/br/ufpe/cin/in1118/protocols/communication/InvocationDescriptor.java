@@ -7,7 +7,8 @@ import br.ufpe.cin.in1118.utils.Network;
 public class InvocationDescriptor implements Serializable{
 
 	private static final long serialVersionUID	= 1L;
-	private String			hostIP				= "";
+	private String			hostIP				= null;
+	private String			sourceIP			= null;
 	private int				port;
 	private int				objectID;
 	private String			serviceName			= null;
@@ -24,6 +25,13 @@ public class InvocationDescriptor implements Serializable{
 		this.hostIP = Network.recoverAddress(hostIP);
 	}
 	
+	public String getSourceIP() {
+		return this.sourceIP;
+	}
+	public void setSourceIP(String ip) {
+		this.sourceIP = Network.recoverAddress(ip);
+	}
+
 	public int getPort() {
 		return port;
 	}
@@ -68,7 +76,7 @@ public class InvocationDescriptor implements Serializable{
 	public void setMethodName(String methodName) {
 		this.methodName = methodName;
 	}
-	public boolean isHasReturn() {
+	public boolean hasReturn() {
 		return hasReturn;
 	}
 	public void setHasReturn(boolean hasReturn) {

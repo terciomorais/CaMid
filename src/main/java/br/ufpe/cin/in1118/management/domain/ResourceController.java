@@ -19,13 +19,16 @@ import br.ufpe.cin.in1118.protocols.communication.Parameter;
 import br.ufpe.cin.in1118.protocols.communication.RequestBody;
 import br.ufpe.cin.in1118.protocols.communication.RequestHeader;
 import br.ufpe.cin.in1118.services.commons.naming.NameRecord;
+import br.ufpe.cin.in1118.utils.Network;
 
-public class DomainManager implements IDomainManagerStub{
+public class ResourceController implements IDomainManagerStub{
 	private String ONE_AUTH		= "oneadmin:gfads!@#";
-	private String ONE_XMLRPC	= "http://10.66.66.6:2633/RPC2";
+	private String ONE_XMLRPC	= "http://10.66.66.2:2633/RPC2";
+	//TODO put the endpoint in the config file
+
 	private Client oneClient;// = new Client(ONE_AUTH, ONE_XMLRPC);
 	
-	public DomainManager(){
+	public ResourceController(){
 		try {
 			oneClient = new Client(ONE_AUTH, ONE_XMLRPC);
 		} catch (ClientConfigurationException e) {
@@ -40,7 +43,7 @@ public class DomainManager implements IDomainManagerStub{
 	}
 	//scale level refers to creation of replicas of VMs or remote objects
 	public boolean scaleOut(String scaleLevel){
-		long init = System.currentTimeMillis();
+		//long init = System.currentTimeMillis();
 		if(scaleLevel.equals("vm")){
 			try {
 				VirtualMachine vm = new VirtualMachine(4,oneClient);
@@ -68,8 +71,14 @@ public class DomainManager implements IDomainManagerStub{
 			}
 		} else if(scaleLevel.equals("app")){
 			MessageHeader header	= new MessageHeader("request", 0, false, 1, 0);
-			RequestHeader reqHeader	=
-					new RequestHeader("br.ufpe.cin.in1118.management.node.NodeManagerService", 0, false, 0, "NodeManagerService", "addService");
+			RequestHeader reqHeader	= new RequestHeader(
+										"br.ufpe.cin.in1118.management.node.NodeManagerService",
+										0,
+										false,
+										0,
+										"NodeManagerService",
+										Network.recoverAddress("localhost"),
+										"addService");
 			Parameter[] params		= {new Parameter("serviceName", String.class, "delay"),
 					new Parameter("className", Class.class, Delay.class)};
 			RequestBody reqBody		= new RequestBody(params);

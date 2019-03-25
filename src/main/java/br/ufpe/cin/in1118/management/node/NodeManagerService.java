@@ -24,18 +24,15 @@ public class NodeManagerService implements Runnable, Serializable{
 		String	feHost		= "localhost";
 		int		fePort		= 1313;
 		String	serverHost	= "localhost";
-		int		serverPort	=
-				Integer.parseInt((String)Broker.getSystemProps().getProperties().get("port_number"));
+		int		serverPort	= Integer.parseInt((String)Broker.getSystemProps().getProperties().get("port_number"));
 		//Class<?> clazz = Class.forName(className);
 		LocalServiceRegistry.getINSTANCE().addService(serviceName, className);
 
 		if(Broker.getSystemProps().getProperties().containsKey("frontend")){
 			String frontend = (String) Broker.getSystemProps().getProperties().get("frontend");
 			feEnable		= frontend.equals("enabled") ? true : false;
-			feHost			= Network.recoverAddress((String)
-								Broker.getSystemProps().getProperties().get("frontend_host"));
-			fePort			= Integer.parseInt((String)
-								Broker.getSystemProps().getProperties().get("frontend_port"));
+			feHost			= Network.recoverAddress((String) Broker.getSystemProps().getProperties().get("frontend_host"));
+			fePort			= Integer.parseInt((String) Broker.getSystemProps().getProperties().get("frontend_port"));
 		}
 		
 		try {
@@ -53,7 +50,7 @@ public class NodeManagerService implements Runnable, Serializable{
 		if (operation.equals("addService")){
 			String param0	= (String) params[0].getValue();
 			Class<?> param1	= (Class<?>) params[1].getValue();
-			this.addService(param0, param1);
+			this.addService(param0.toLowerCase(), param1);
 		}
 	}
 

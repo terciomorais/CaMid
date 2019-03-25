@@ -7,14 +7,12 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observer;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.google.gson.Gson;
 
 import br.ufpe.cin.in1118.management.monitoring.Agent;
@@ -22,49 +20,53 @@ import br.ufpe.cin.in1118.management.monitoring.InvokingDataPoint;
 import br.ufpe.cin.in1118.management.node.NodeManager;
 
 public class ObjectMonitor implements Runnable{
-
+	
 	private int 					interval		= 30000;
 	private Map<String, Observer>	objectAgents	= new HashMap<String, Observer>();
-	private String 					fileLog			= "logs/app/objectLog";
-
-	private Map<String, List<InvokingDataPoint>>
-									timeseries 		= new ConcurrentHashMap<String, List<InvokingDataPoint>>();
-
+	private String 					fileLog			= "logs/app/";
+	
+	//Stats list by service
+	private Map<String, List<InvokingDataPoint>> timeseries = Collections.synchronizedMap(new HashMap<String, List<InvokingDataPoint>>());
+	
 	public ObjectMonitor(){
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 	}
-
+	
 	public Map<String, Observer> getObjectAgents() {
 		return objectAgents;
 	}
-
+	
 	public Agent getAgent(String className) {
 		return (Agent)this.objectAgents.get(className);
 	}
-
+	
 	public void addAgent(String className){
-		this.objectAgents.put(className, new Agent());
+		this.objectAgents.put(className, new Agent(className));
 		this.timeseries.put(className, new ArrayList<InvokingDataPoint>());
 	}
-
+	
 	public void setAgents(Map<String, Observer> objectAgents) {
 		this.objectAgents = objectAgents;
-		this.setTimeSeries(objectAgents.keySet());
+		//this.setTimeSeries(FrontEnd.getInstance().getServices().keySet());
+		this.setTimeSeries();
 	}
-
-	private void setTimeSeries(Set<String> keys){
-		for(Iterator<String> it = keys.iterator(); it.hasNext();)
-			this.timeseries.put(it.next(), new ArrayList<InvokingDataPoint>());
+	
+	private void setTimeSeries(){
+		for(String className : this.objectAgents.keySet()){
+			Set<String> services = ((Agent)this.objectAgents.get(className)).getServiceEvents().keySet();
+			for(String str : services)
+			this.timeseries.put(str, new ArrayList<InvokingDataPoint>());
+		}
 	}
-
-	public void addTimeSeries(String key, List<InvokingDataPoint> idp){
-		this.timeseries.put(key, idp);
+	
+	public void addTimeSeries(String service, List<InvokingDataPoint> idp){
+		this.timeseries.put(service, idp);
 	}
-
-	public InvokingDataPoint getLastDataPoint(String className){
-		return this.timeseries.get(className).get(this.timeseries.get(className).size() - 1);
+	
+	public InvokingDataPoint getLastDataPoint(String service){
+		return this.timeseries.get(service).get(this.timeseries.get(service).size() - 1);
 	}
-
+	
 	@Override
 	public void run() {
 		System.out.println("[ObjectMonitor] Starting object monitoring...");
@@ -73,42 +75,48 @@ public class ObjectMonitor implements Runnable{
 				Thread.sleep(this.interval);
 				for(String className : this.objectAgents.keySet()){
 					Agent ag = this.getAgent(className);
-					if(ag.getEvents() != null && !ag.getEvents().isEmpty()){					
-						InvokingDataPoint dataPoint = new InvokingDataPoint(ag.getEvents());
-						this.timeseries.get(className).add(dataPoint);
-						ag.clearEvents();
-						if(NodeManager.getInstance().getAnalyser()
-								.analyse(this.getLastDataPoint(className).getStatistics().getAverage()) != 0){
-/*							System.out.println("[ObjectMonitor:81] Average "
-								+ this.getLastDataPoint(className)
-									.getStatistics().getAverage());
-							System.out.println("[ObjectMonitor:84] Threshold "
-									+ NodeManager.getInstance().getAnalyser().getThreshold());*/
-							NodeManager.getInstance().alert(NodeManager.getInstance()
-									.getAnalyser().analyse(this.getLastDataPoint(className).getStatistics().getAverage()));
+					//System.out.println("[ObjectMonitor-77] monitored object: " + className);
+					if(ag.getServiceEvents() != null && !ag.getServiceEvents().isEmpty()){
+						for(String st : ag.getServiceEvents().keySet()){
+							//System.out.println("                  monitored service: " + st);
+							if(ag.getEvents(st) != null && !ag.getEvents(st).isEmpty()){
+								InvokingDataPoint dataPoint = new InvokingDataPoint(ag.getEvents(st));
+								
+								if(!this.timeseries.containsKey(st))
+									this.timeseries.put(st, new ArrayList<>());
+								this.timeseries.get(st).add(dataPoint);
+								System.out.println("[ObjectMonitor-88] timeseries size: " + this.timeseries.get(st).size());
+								ag.clearEvents();
+							}
+							
+							if(NodeManager.getInstance().getAnalyser().analyse(this.getLastDataPoint(st).getStatistics().getAverage()) != 0){
+								System.out.println("[ObjectMonitor:81] Average " + this.getLastDataPoint(st).getStatistics().getAverage());
+								//System.out.println("[ObjectMonitor:84] Threshold " + NodeManager.getInstance().getAnalyser().get;
+								NodeManager.getInstance().alert(NodeManager.getInstance().getAnalyser().analyse(this.getLastDataPoint(st).getStatistics().getAverage()));
+							}
+							
+							if(this.timeseries.get(st).size() >= 10000){
+								this.saveToFile(st);
+							}	
 						}
 					}
-
-					if(this.timeseries.get(className).size() >= 10000)
-						this.saveToFile(className);
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 	}
-
-	private void saveToFile(String className){
+	
+	private void saveToFile(String service){
 		Calendar calendar = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("-yyyy-MMM-dd");
 		calendar.setTimeInMillis(System.currentTimeMillis());
-		fileLog.concat(className + sdf.format(calendar.getTime()) + ".log");
-
+		fileLog = fileLog.concat(service + sdf.format(calendar.getTime()) + ".log");
 		Gson gson = new Gson();
-		String tsString = gson.toJson(this.timeseries.get(className));
+		String tsString = gson.toJson(this.timeseries.get(service));
 		BufferedWriter bw = null;
 		File log = new File(fileLog);
-		if(!log.exists())
+		if(!log.exists()){
 			try {
 				log.createNewFile();
 				bw = new BufferedWriter(new FileWriter(log,true));
@@ -118,9 +126,10 @@ public class ObjectMonitor implements Runnable{
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-
+		}
 		try{
-			bw = new BufferedWriter(new FileWriter(log,true));
+			System.out.println("[objectMonitor-137] nome do arquivo: " + log.getPath());
+			bw = new BufferedWriter(new FileWriter(log, true));
 			bw.write(tsString);
 			bw.newLine();
 			bw.close();

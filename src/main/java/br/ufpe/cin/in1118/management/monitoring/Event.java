@@ -3,10 +3,13 @@ package br.ufpe.cin.in1118.management.monitoring;
 
 public class Event implements Comparable<Event>{
 	
-	private String		name		= "";
+	private String		name			= "";
+	/*Context states where the event takes places: management, forwading and request */
+	private String 		context			= "";
 	private long 		timeStamp;
-	private String 		source		= "";
-	private String 		service		= "";
+	private String 		sourceEndPoint	= "";
+	private String 		service			= "";
+	private String 		targetEndPoint	= "";
 	private long 		initForthTime;
 	private long 		initBackTime;
 	private long 		endForthTime;
@@ -22,7 +25,7 @@ public class Event implements Comparable<Event>{
 	
 	public Event(String source){
 		this.setTimeStamp(System.currentTimeMillis());
-		this.setSource(source);
+		this.setSourceEndPoint(source);
 	}
 	
 	public String getName() {
@@ -33,6 +36,13 @@ public class Event implements Comparable<Event>{
 		this.name = name;
 	}
 
+	public String getContext() {
+		return this.context;
+	}
+
+	public void setContext(String context) {
+		this.context = context;
+	}
 	public long getTimeStamp() {
 		return timeStamp;
 	}
@@ -41,12 +51,12 @@ public class Event implements Comparable<Event>{
 		this.timeStamp = timeStamp;
 	}
 
-	public String getSource() {
-		return source;
+	public String getSourceEndPoint() {
+		return this.sourceEndPoint;
 	}
 
-	public void setSource(String source) {
-		this.source = source;
+	public void setSourceEndPoint(String source) {
+		this.sourceEndPoint = source;
 	}
 
 	public String getService() {
@@ -55,6 +65,14 @@ public class Event implements Comparable<Event>{
 
 	public void setService(String service) {
 		this.service = service;
+	}
+
+	public String getTargetEndPoint(){
+		return this.targetEndPoint;
+	}
+
+	public void setTargetEndPoint(String target){
+		this.targetEndPoint = target;
 	}
 	
 	public long getInitForthTime() {
@@ -127,7 +145,6 @@ public class Event implements Comparable<Event>{
 
 	@Override
 	public int compareTo(Event e) {
-		
 		return Long.compare(this.timeStamp, e.getTimeStamp());
 	}	
 }

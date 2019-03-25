@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 
 import br.ufpe.cin.in1118.distribution.stub.DelayStub;
 import br.ufpe.cin.in1118.distribution.stub.NamingStub;
+import br.ufpe.cin.in1118.management.monitoring.Event;
 
 public class ReqTaxWorkLoader {
 
@@ -48,7 +49,7 @@ public class ReqTaxWorkLoader {
 			sumT += System.currentTimeMillis() - b;
 		}
 		
-		System.out.println("[ReqTaxWorkLoader:47] Tempo médio no ramp up: " + sumT/100 + " ms");
+		System.out.println("[ReqTaxWorkLoader:47] Average time during ramp up: " + sumT/100 + " ms");
 		for(int tax = ini_users; tax <= end_users; tax += step){
 			System.out.println(tax
 					+ " simultaneous users at a request rate of "
@@ -75,6 +76,7 @@ public class ReqTaxWorkLoader {
 				es.execute(new SenderRunner(reqTax,serviceTime,experimentTime, host, port));
 
 			es.shutdown();
+
 			try {
 				es.awaitTermination(1L, java.util.concurrent.TimeUnit.DAYS);
 			} catch (InterruptedException e1) {
@@ -88,18 +90,17 @@ public class ReqTaxWorkLoader {
 				maxValue = minValue = SenderRunner.elapsedTimes.get(0).getElapsedTime();
 				requestCount = SenderRunner.elapsedTimes.size();
 
-				for(int l = 0; l < requestCount; l++){
-					if(SenderRunner.elapsedTimes.get(l).getElapsedTime() >= serviceTime){
-						minValue = SenderRunner.elapsedTimes.get(l).getElapsedTime() < minValue
-											? SenderRunner.elapsedTimes.get(l).getElapsedTime()
-											: minValue;
-						maxValue = SenderRunner.elapsedTimes.get(l).getElapsedTime() > maxValue
-											? SenderRunner.elapsedTimes.get(l).getElapsedTime()
-											: maxValue;
+				for(Event ev : SenderRunner.elapsedTimes){
+					if(ev.getElapsedTime() >= serviceTime){
+						minValue = ev.getElapsedTime() < minValue
+									? ev.getElapsedTime()
+									: minValue;
+						maxValue = ev.getElapsedTime() > maxValue
+									? ev.getElapsedTime()
+									: maxValue;
 
-						sum+= SenderRunner.elapsedTimes.get(l).getElapsedTime();
-						squareSum += SenderRunner.elapsedTimes.get(l).getElapsedTime()
-								* SenderRunner.elapsedTimes.get(l).getElapsedTime();
+						sum+= ev.getElapsedTime();
+						squareSum += ev.getElapsedTime() * ev.getElapsedTime();
 					} else {
 						SenderRunner.success.decrementAndGet();
 						SenderRunner.systemFails.incrementAndGet();
@@ -110,7 +111,9 @@ public class ReqTaxWorkLoader {
 			}
 
 			BufferedWriter bw = null;
+			BufferedWriter bwTime = null;
 			File log = new File("logs/" + scenario + "-" + serviceTime + "ms-" + reqTax + "ReqsPerSec-" +  ini_users + "-" + end_users + "users.csv");
+			File logTime = new File("logs/" + scenario + "-" + serviceTime + "ms-" + reqTax + "ReqsPerSec-" +  ini_users + "-" + end_users + "users-elapsedTimes.csv");
 			if (!log.exists())
 				try {
 					log.createNewFile();
@@ -121,6 +124,31 @@ public class ReqTaxWorkLoader {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+
+			if (!logTime.exists())
+				try {
+					logTime.createNewFile();
+					bwTime = new BufferedWriter(new FileWriter(logTime,true));
+					bwTime.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			
+			try{
+				bwTime = new BufferedWriter(new FileWriter(logTime,true));
+				int cont = 0;
+				for(Event ev : SenderRunner.elapsedTimes){
+					bwTime.write(ev.getElapsedTime() + ";");
+					cont++;
+					if(cont == 20){
+						bwTime.newLine();
+						cont = 0;
+					}
+				}
+				bwTime.write("\b \b");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
 			try{
 				bw = new BufferedWriter(new FileWriter(log,true));
@@ -155,6 +183,7 @@ public class ReqTaxWorkLoader {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
 			Thread.currentThread();
 			try {
 				Thread.sleep(3000);

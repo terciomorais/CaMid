@@ -21,7 +21,7 @@ public class FrontEnd {
 	private PropertiesSetup			properties	= new PropertiesSetup("config/frontend.config");
 	private String					host		= Network.recoverAddress("localhost");
 	private int						port		= 1212;
-	private Map<String,NameRecord>	serviceList	= null;
+	private Map<String, NameRecord>	serviceList	= null;
 	private LocalServiceRegistry	registry	= LocalServiceRegistry
 			.getINSTANCE("config/remote_front.properties");
 	
@@ -133,7 +133,7 @@ public class FrontEnd {
 			try {
 				System.out.println("[Broker] Registering service " + serviceName + ": " + className);
 				Class<?> clazz = Class.forName(className);
-				stub = (Stub) clazz.newInstance();
+				stub = (Stub) clazz.getDeclaredConstructor().newInstance();
 				
 				Method method = clazz.getMethod("setServiceName", new Class[]{String.class});
 				method.invoke(stub, serviceName);

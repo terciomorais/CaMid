@@ -1,0 +1,5 @@
+simultaneous users;total_time;total_invocations;success;failed;response time average (ms);standard_deviation;percent;throughput;fail_tax;hi_value;low_value
+250;123868;0;0;250000;0.0;0.0;NaN;0.0;Infinity;0;0
+500;196271;0;0;500000;0.0;0.0;NaN;0.0;Infinity;0;0
+750;297358;0;0;750000;0.0;0.0;NaN;0.0;Infinity;0;0
+1000;394438;0;0;1000000;0.0;0.0;NaN;0.0;Infinity;0;0

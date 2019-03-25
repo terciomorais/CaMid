@@ -8,17 +8,17 @@ import br.ufpe.cin.in1118.utils.PropertiesSetup;
 
 public class LocalServiceRegistry {
 
-	private static	LocalServiceRegistry	INSTANCE		= null;
-	private 		Map<String, Class<?>>	serviceRegistry	= null;
-	private PropertiesSetup remoteProperties = new PropertiesSetup("config/remote.properties");
+	private static	LocalServiceRegistry	INSTANCE			= null;
+	private 		Map<String, Class<?>>	serviceRegistry		= null;
+	private 		PropertiesSetup			remoteProperties	= new PropertiesSetup("config/remote.properties");
 
 	public LocalServiceRegistry() {
 		this.serviceRegistry = new TreeMap<String, Class<?>>();
 	}
 	
 	public LocalServiceRegistry(String propFile){
-		this.remoteProperties = new PropertiesSetup(propFile);
-		this.serviceRegistry = new TreeMap<String, Class<?>>();
+		this.remoteProperties	= new PropertiesSetup(propFile);
+		this.serviceRegistry	= new TreeMap<String, Class<?>>();
 	}
 	
 	public PropertiesSetup getRemoteProperties() {

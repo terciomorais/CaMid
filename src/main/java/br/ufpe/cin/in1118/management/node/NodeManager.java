@@ -66,13 +66,12 @@ public class NodeManager {
 	
 	//TODO Change communication to messaging
 	public void alert(short alert){
-		if(Broker.getSystemProps().getProperties().containsKey("dm_host")
-				&& Broker.getSystemProps().getProperties().containsKey("dm_port")){
+		/* if(Broker.getSystemProps().getProperties().containsKey("dm_host") && Broker.getSystemProps().getProperties().containsKey("dm_port")){
 			this.analyser.setPaused(true);
 			ClientDomainManager cdm = new ClientDomainManager("scale", alert);
 			//ClientDomainManager cdm = new ClientDomainManager("scaleup", "app");
 			Broker.getExecutorInstance().execute(cdm);
-		} else 
+		} else  */
 			System.out.println("[NodeManager:73] OVERLOAD ALERT WITHOUT ACTION");
 	}
 	

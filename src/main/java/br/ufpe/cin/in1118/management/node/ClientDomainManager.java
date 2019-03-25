@@ -1,7 +1,7 @@
 package br.ufpe.cin.in1118.management.node;
 
 import br.ufpe.cin.in1118.application.server.Broker;
-import br.ufpe.cin.in1118.distribution.stub.DomainManagerStub;
+import br.ufpe.cin.in1118.distribution.stub.ResourceControllerStub;
 import br.ufpe.cin.in1118.distribution.stub.NamingStub;
 
 public class ClientDomainManager implements Runnable {
@@ -31,7 +31,7 @@ public class ClientDomainManager implements Runnable {
 		int 	port = Integer.parseInt(Broker.getSystemProps().getProperties().getProperty("naming_port"));
 		
 		NamingStub naming = new NamingStub(host, port);
-		DomainManagerStub domainManager	= (DomainManagerStub)naming.lookup("management");
+		ResourceControllerStub domainManager	= (ResourceControllerStub)naming.lookup("management");
 		if(this.action.equals("scaleout")){
 			result = domainManager.scaleOut(this.scaleLevel);
 		} else if(this.action.equals("scale")){

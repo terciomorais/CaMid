@@ -40,7 +40,7 @@ public class ClassicWorkLoader {
 
 		//ramp up
 		for(int i = 0; i < 100; i++){
-			long b = System.currentTimeMillis();
+			//long b = System.currentTimeMillis();
 			delay.delay(10);
 //			System.out.println("[ClassicWorkLoader] " + (System.currentTimeMillis() - b) + "ms");
 		}

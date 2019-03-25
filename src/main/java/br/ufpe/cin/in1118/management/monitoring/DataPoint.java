@@ -70,7 +70,7 @@ public class DataPoint {
 	}
 	
 	public double getAverage() {
-		return average;
+		return this.average;
 	}
 	public double getLowerValue() {
 		return lowerValue;
