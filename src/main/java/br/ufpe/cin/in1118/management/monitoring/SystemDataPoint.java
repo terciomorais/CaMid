@@ -1,17 +1,20 @@
 package br.ufpe.cin.in1118.management.monitoring;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import br.ufpe.cin.in1118.management.node.monitoring.SystemData;
 
-public class SystemDataPoint {
-	private DataPoint	cpuUsage	=	new DataPoint();
-	private DataPoint	memUsage	=	new DataPoint();
-	private DataPoint	netRx		=	new DataPoint();
-	private DataPoint	netTx		=	new DataPoint();
-	private List<SystemData> dataList	= new ArrayList<SystemData>();
+public class SystemDataPoint implements Serializable{
+	private static final long serialVersionUID = -5498943159499998760L;
+	
+	private DataPoint cpuUsage = new DataPoint();
+	private DataPoint			memUsage	=	new DataPoint();
+	private DataPoint			netRx		=	new DataPoint();
+	private DataPoint			netTx		=	new DataPoint();
+	private List<SystemData>	dataList	=	new ArrayList<SystemData>();
 
 	public SystemDataPoint(){
 	}
@@ -20,17 +23,45 @@ public class SystemDataPoint {
 		
 		for(Iterator<SystemData> it = systemDataList.iterator(); it.hasNext();){
 			SystemData sd = it.next();
-			if(Double.isNaN(sd.getCpuUsage()) &&
-					Double.isNaN(sd.getMemUsage()) &&
-					Double.isNaN(sd.getRxTotal()) &&
-					Double.isNaN(sd.getTxTotal()))
+			//System.out.println("[SystemDataPoint-43] CPU usage " + sd.getCpuUsage());
+			if(!(Double.isNaN(sd.getCpuUsage()) ||
+					Double.isNaN(sd.getMemUsage()) ||
+					Double.isNaN(sd.getRxTotal()) ||
+					Double.isNaN(sd.getTxTotal()))){
 				this.dataList.add(sd);
+				this.setDataPoint();
+				//System.out.println("[SystemDataPoint-50] CPU usage average " + this.getCpuUsage().getAverage());
+			}		
 		}
-		this.setDataPoint();
+	}
+	public DataPoint getCpuUsage() {
+		return this.cpuUsage;
 	}
 
+	public DataPoint getMemUsage() {
+		return this.memUsage;
+	}
+
+	public DataPoint getNetRx() {
+		return this.netRx;
+	}
+
+	public DataPoint getNetTx() {
+		return this.netTx;
+	}
+
+/* 	public List<SystemData> getDataList() {
+		return this.dataList;
+	} */
 	public List<SystemData> getSystemDataList() {
 		return this.dataList;
+	}
+
+	public SystemData getLastSystemData(){
+		if(!this.dataList.isEmpty())
+			return this.dataList.get(this.dataList.size() - 1);
+		else
+			return null;
 	}
 
 	public synchronized void setDataPoint(){
@@ -88,8 +119,8 @@ public class SystemDataPoint {
 					maxNetRx = (sd.getRxTotal() < maxNetTx ? sd.getRxTotal() : maxNetRx);
 					minNetRx = sd.getRxTotal() > minNetRx ? sd.getRxTotal() : minNetRx;
 
-					maxCPU = Double.isNaN(maxCPU)? 1.0 : maxCPU;
-					minCPU = Double.isNaN(minCPU)? 1.0 : minCPU;
+					maxCPU = Double.isNaN(maxCPU)? 0.0 : maxCPU;
+					minCPU = Double.isNaN(minCPU)? 0.0 : minCPU;
 
 					cpuUsage.setSum(cpuUsage.getSum() + sd.getCpuUsage());
 					memUsage.setSum(memUsage.getSum() + sd.getMemUsage());
@@ -101,13 +132,13 @@ public class SystemDataPoint {
 					netRx.setSquareSum(netRx.getSquareSum() + (sd.getRxTotal() * sd.getRxTotal()));
 					netTx.setSquareSum(netTx.getSquareSum() + sd.getTxTotal() * sd.getTxTotal());
 			}
-			System.out.println("[SystemDataPoint:110] ::: " + maxCPU + " " + maxMem + " " + maxNetRx + " " + maxNetTx);
+			//System.out.println("[SystemDataPoint:110] ::: " + maxCPU + " " + maxMem + " " + maxNetRx + " " + maxNetTx);
 			this.cpuUsage.setHighValue(maxCPU);
 			this.memUsage.setHighValue(maxMem);
 			this.netRx.setHighValue(maxNetRx);
 			this.netTx.setHighValue(maxNetTx);
 
-			System.out.println("[SystemDataPoint:110] ::: " + minCPU + " " + minMem + " " + minNetRx + " " + minNetTx);
+			//System.out.println("[SystemDataPoint:110] ::: " + minCPU + " " + minMem + " " + minNetRx + " " + minNetTx);
 			this.cpuUsage.setLowerValue(minCPU);
 			this.memUsage.setLowerValue(minMem);
 			this.netRx.setLowerValue(minNetRx);
@@ -117,8 +148,7 @@ public class SystemDataPoint {
 			this.memUsage.setStatistics();
 			this.netRx.setStatistics();
 			this.netTx.setStatistics();
-			
-			System.out.println("[SystemDataPoint:110] data " + this.cpuUsage.getAverage() + " " + this.memUsage.getAverage() + " " + this.netRx.getAverage() + " " + this.netTx.getAverage());
+			//System.out.println("[SystemDataPoint:148] stat data " + this.cpuUsage.getSum() + " / " + this.cpuUsage.getSuccessCount() + " = " + this.cpuUsage.getAverage());
 		}
 	}
 }

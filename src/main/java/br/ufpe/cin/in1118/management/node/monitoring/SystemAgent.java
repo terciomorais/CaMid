@@ -60,7 +60,9 @@ public class SystemAgent implements Runnable{
 
 	private void update() {
 		try {
-			Long[] m = this.getNetworkMetrics();
+			Long[] m = this.getNetworkMeasurements();
+			//double d = sigar.getCpuPerc().getCombined();
+			//System.out.println("[SystemAgent-65] CPU usage " +  d);
 			dataList.add(new SystemData((sigar.getCpuPerc().getCombined()),
 					sigar.getMem().getUsedPercent(),
 					m[0],
@@ -77,7 +79,7 @@ public class SystemAgent implements Runnable{
 			return dataList.get(dataList.size() - 1);
 	}
 	
-	private Long[] getNetworkMetrics() throws SigarException{
+	private Long[] getNetworkMeasurements() throws SigarException{
 
         for (String ni : sigar.getNetInterfaceList()) {
             NetInterfaceStat netStat = sigar.getNetInterfaceStat(ni);

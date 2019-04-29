@@ -29,8 +29,7 @@ public class Invoker {
 
 	private Method searchMethod(Message message){
 		String		operation			= message.getBody().getRequestHeader().getOperation();
-		String		remoteObjectType	=
-				this.inUnmarshalledMessage.getBody().getRequestHeader().getContext();
+		String		remoteObjectType	= this.inUnmarshalledMessage.getBody().getRequestHeader().getContext();
 		Class<?>	remoteObjectClass	= null;
 
 		try {
@@ -39,9 +38,9 @@ public class Invoker {
 			e.printStackTrace();
 		}
 
-		Parameter[]	parameters	= this.inUnmarshalledMessage.getBody().getRequestBody().getParameters();
-		Method[]	methods		= remoteObjectClass.getDeclaredMethods();
-		Method		targetMethod = null;
+		Parameter[]	parameters		= this.inUnmarshalledMessage.getBody().getRequestBody().getParameters();
+		Method[]	methods			= remoteObjectClass.getDeclaredMethods();
+		Method		targetMethod	= null;
 
 		search: {
 			for(Method method : methods){

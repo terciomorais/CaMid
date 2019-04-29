@@ -1,10 +1,13 @@
 package br.ufpe.cin.in1118.management.monitoring;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataPoint {
-	private double	average				= 0;
+public class DataPoint implements Serializable{
+	private static final long serialVersionUID = -7071323912334870781L;
+	
+	private double average = 0;
 	private double	lowerValue			= 0;
 	private double	higherValue			= 0;
 	private double	standardDeviation	= 0;
@@ -126,11 +129,10 @@ public class DataPoint {
 	public void setStatistics(){
 		if(this.metrics != null){
 			int sucessCount = (this.count - this.failCount);
+			//System.out.println("[DataPoint-129] Average " + this.sum + " / " + sucessCount);
 			this.average = (Double.isNaN(this.sum/sucessCount)||Double.isInfinite(this.sum/sucessCount)) ? 0.0 : (this.sum/sucessCount);
-			this.standardDeviation = Math.sqrt((this.squareSum -
-					(this.sum * this.sum/sucessCount))/(sucessCount - 1));
+			this.standardDeviation = Math.sqrt((this.squareSum - (this.sum * this.sum/sucessCount))/(sucessCount - 1));
 			this.standardDeviation = (Double.isNaN(this.standardDeviation) || Double.isInfinite(this.standardDeviation)) ? 0.0 : this.standardDeviation;
 		}
 	}
-	
 }

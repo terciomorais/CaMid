@@ -6,11 +6,19 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - ClientDomainManager",
+            "request": "launch",
+            "mainClass": "br.ufpe.cin.in1118.application.client.ClientDomainManager",
+            "projectName": "exercicio04RemotePatterns",
+            "args": "localhost 1111"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - ReqTaxWorkLoader",
             "request": "launch",
             "mainClass": "br.ufpe.cin.in1118.application.client.ReqTaxWorkLoader",
             "projectName": "exercicio04RemotePatterns",
-            "args": "localhost 1111 10 1 3 1 100 100 ? MNG_ON"
+            "args": "localhost 1111 10 1 3 1 1 1 MNG_ON"
         },
         {
             "type": "java",

@@ -1,8 +1,11 @@
 package br.ufpe.cin.in1118.management.node.monitoring;
 
-public class SystemData {
+import java.io.Serializable;
 
-	private long	timeStamp	= 0L;
+public class SystemData implements Serializable{
+	private static final long serialVersionUID = 116949310283240122L;
+	
+	private long timeStamp = 0L;
 	private double	cpuUsage	= 0.0D;
 	private double	memUsage	= 0.0D;
 	private long	rxTotal		= 0L;

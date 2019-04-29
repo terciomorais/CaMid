@@ -30,6 +30,10 @@ public class NameRecord implements Serializable {
 		this.endpoints = endPoints;
 	}
 	
+	public boolean hasReplicas(){
+		return endpoints.size() > 1;
+	}
+	
 	public void addRemoteEndPoint(String endpoint){
 		EndPoint end = new EndPoint(endpoint);
 		if(this.endpoints.isEmpty())

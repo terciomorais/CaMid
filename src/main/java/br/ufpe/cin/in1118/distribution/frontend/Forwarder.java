@@ -22,13 +22,11 @@ public class Forwarder implements IForwarder{
 		
 		if(nr.getEndPoints().size() == 1){
 			String[] endpoint = nr.getEndPoints().iterator().next().getEndpoint().split(":");
-			clientObjectSender = new ClientSender(endpoint[0],
-											Integer.parseInt(endpoint[1]),incomingMessage);
+			clientObjectSender = new ClientSender(endpoint[0], Integer.parseInt(endpoint[1]),incomingMessage);
 			
 		} else if (nr.getEndPoints().size() > 1){
 			String[] endpoint = nr.getSchduller().getNextEndPoint().getEndpoint().split(":");
-			clientObjectSender = new ClientSender(endpoint[0],
-											Integer.parseInt(endpoint[1]), incomingMessage);
+			clientObjectSender = new ClientSender(endpoint[0], Integer.parseInt(endpoint[1]), incomingMessage);
 		
 		} else {
 			Message msg = new Message();

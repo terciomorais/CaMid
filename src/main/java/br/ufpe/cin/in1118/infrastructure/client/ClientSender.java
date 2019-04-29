@@ -46,7 +46,8 @@ public class ClientSender implements Callable<Message> {
 			return this.receivedMessage;
 		} catch (IOException e) {
 			System.err.println("[ClientSender:48] Error during sending: I/O Exception host "
-					+ this.host + " (message no. " + e.getMessage());
+					+ this.host + " (message no. " + e.getMessage() + ")");
+			e.printStackTrace();
 			this.receivedMessage = new Message();
 			this.receivedMessage.setStatus(Message.ResponseStatus.SENDING_EXCEPTION);
 			this.receivedMessage.setStatusMessage("I/O error on ClientSender");

@@ -94,7 +94,7 @@ public class ResourceController implements IDomainManagerStub{
 
 	@Override
 	public void addService(String service, NameRecord record) {
-		System.out.println("[DomainManager:68] Updating services on DomainManager");
+		System.out.println("[DomainManager:68] Updating services on CloudManager");
 		FrontEnd.getInstance().addService(service, record);
 	}
 }

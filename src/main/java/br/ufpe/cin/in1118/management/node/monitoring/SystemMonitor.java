@@ -13,7 +13,10 @@ import java.util.List;
 import com.google.gson.Gson;
 
 import br.ufpe.cin.in1118.application.server.Broker;
+import br.ufpe.cin.in1118.management.analysing.Analysis;
 import br.ufpe.cin.in1118.management.monitoring.SystemDataPoint;
+import br.ufpe.cin.in1118.management.node.ClientCloudManager;
+import br.ufpe.cin.in1118.management.node.NodeManager;
 import br.ufpe.cin.in1118.utils.Network;
 
 public class SystemMonitor implements Runnable{
@@ -92,47 +95,86 @@ public class SystemMonitor implements Runnable{
 		this.fileLog = fileLog;
 	}
 	
+	public SystemDataPoint getLastSystemDataPoint(){
+		if(this.timeSeries != null || !this.timeSeries.isEmpty())
+			return this.timeSeries.get(this.timeSeries.size() - 1);
+		else
+			return null;
+	}
+
+	private void sendAlert(Analysis analysis){
+		ClientCloudManager cdm = new ClientCloudManager(analysis);
+		Broker.getExecutorInstance().execute(cdm);
+	}
+	
 	@Override
 	public void run() {
 		Broker.getExecutorInstance().execute(agent);
 		System.out.println("[SystemMonitor] Starting system monitor...\n");
 		System.out.println(" ----------------------------------------------------");
 		System.out.println("|  [SystemMonitor] System info \n|    Arch: "
-			+ this.getArch()
-			+ "\n|    OS name: " + this.getOsName()
-			+ "\n|    OS version: " + this.getOsVersion());
+								+ this.getArch()
+								+ "\n|    OS name: " + this.getOsName()
+								+ "\n|    OS version: " + this.getOsVersion());
 		System.out.println(" ----------------------------------------------------");
 		
-		while(true)
-			try {
-				Thread.currentThread();
-				Thread.sleep(interval);
-				
-				if(!SystemAgent.getSystemDataList().isEmpty()){
-					
-					this.timeSeries.add(new SystemDataPoint(
-							new ArrayList<SystemData>(SystemAgent.getSystemDataList())));
-					SystemAgent.getSystemDataList().clear();
-					long yesterday = (this.timeSeries== null || this.timeSeries.isEmpty()) ? 
-							this.timeSeries.get(0).getSystemDataList().get(0).getTimeStamp():
-								System.currentTimeMillis();
-							
-					long day = System.currentTimeMillis() - yesterday;
-					if(day >= interval) //86400)
-						this.saveToFile();	
+		while (true)
+		try {
+			Thread.currentThread();
+			Thread.sleep(interval);
+			
+			if (!SystemAgent.getSystemDataList().isEmpty()){
+				if(this.timeSeries.isEmpty())
+					this.timeSeries.add(new SystemDataPoint(new ArrayList<SystemData>(SystemAgent.getSystemDataList())));
+				else if (this.timeSeries.get(this.timeSeries.size() - 1).getSystemDataList().size() < 100){
+					for(SystemData sd : SystemAgent.getSystemDataList())
+					this.timeSeries.get(this.timeSeries.size() - 1).getSystemDataList().add(sd);
+				} else {
+					this.timeSeries.get(this.timeSeries.size() - 1).setDataPoint();
+					this.timeSeries.add(new SystemDataPoint(new ArrayList<SystemData>(SystemAgent.getSystemDataList())));
 				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+				SystemAgent.getSystemDataList().clear();
+
+				//System.out.println("[SystemMonitor:144] CPU usage = " + this.getLastSystemDataPoint().getCpuUsage().getAverage());
+				Analysis analysis = NodeManager.getInstance().getSystemAnalyser().analyse(this.getLastSystemDataPoint());
+				
+				if (!NodeManager.getInstance().getSystemAnalyser().isPaused() && analysis.isResourceAlert() && analysis.getAlertMessage().equals("CPU overload")){
+					this.sendAlert(analysis);
+					NodeManager.getInstance().getSystemAnalyser().setPaused(true);
+				}						
 			}
+			
+			if (SystemAgent.getSystemDataList().size() > 99){
+				this.timeSeries.add(new SystemDataPoint(new ArrayList<SystemData>(SystemAgent.getSystemDataList())));
+				SystemAgent.getSystemDataList().clear();
+			}
+
+ 			long yesterday = (!(this.timeSeries == null) && !this.timeSeries.isEmpty())
+								? this.timeSeries.get(0).getSystemDataList().get(0).getTimeStamp()
+								: System.currentTimeMillis();
+			
+			long day = System.currentTimeMillis() - yesterday;
+			if (day >= 86400000){
+				this.saveToFile();
+				this.timeSeries.clear();
+			}	
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void saveToFile(){
 		Calendar calendar = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 		calendar.setTimeInMillis(System.currentTimeMillis());
-		fileLog.concat(Network.recoverAddress("localhost")
-						+ sdf.format(calendar.getTime()) 
-						+ ".log");
+		
+		File folder = new File(fileLog);
+		if(!folder.exists())
+			folder.mkdirs();
+		
+		fileLog = fileLog.concat(Network.recoverAddress("localhost")
+					+ sdf.format(calendar.getTime()) 
+					+ ".log");
 		
 		Gson gson = new Gson();
 		String tsString = gson.toJson(this.timeSeries);
@@ -144,7 +186,7 @@ public class SystemMonitor implements Runnable{
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-
+		
 		try{
 			bw = new BufferedWriter(new FileWriter(log,true));
 			bw.write(tsString);
@@ -153,6 +195,5 @@ public class SystemMonitor implements Runnable{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.timeSeries.clear();
 	}
 }

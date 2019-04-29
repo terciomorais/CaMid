@@ -2,6 +2,7 @@ package br.ufpe.cin.in1118.distribution.frontend;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,8 +23,10 @@ public class FrontEnd {
 	private String					host		= Network.recoverAddress("localhost");
 	private int						port		= 1212;
 	private Map<String, NameRecord>	serviceList	= null;
-	private LocalServiceRegistry	registry	= LocalServiceRegistry
-			.getINSTANCE("config/remote_front.properties");
+	private Set<EndPoint>			nodes		= null;
+	private Set<EndPoint>			clouds		= null;
+
+	private LocalServiceRegistry	registry	= LocalServiceRegistry.getINSTANCE("config/remote_front.properties");
 	
 	private FrontEnd(){
 		this.registry.create();
@@ -77,36 +80,66 @@ public class FrontEnd {
 	
 	public void addService(String service, NameRecord record){
 		this.serviceList.put(service, record);
-		System.out.println("[FrontEnd] Service list updated:");
+		System.out.println("--------------------------------------\n  [FrontEnd:79] Service list updated:");
 		for(Map.Entry<String, NameRecord> rec: this.serviceList.entrySet()){
-			System.out.println("[Frontend:95] service " + rec.getValue().getStub().getServiceName());
+			System.out.println("[Frontend:81] service " + rec.getValue().getStub().getServiceName());
 			for(EndPoint ep : rec.getValue().getEndPoints())
 				System.out.println("            endpoint " + ep.getEndpoint());
 		}
+		System.out.println("--------------------------------------");
+
+		this.addAllNodes(record.getEndPoints());
 	}
 	
+	public void removeService(String service){
+		this.serviceList.remove(service);
+		System.out.println("--------------------------------------\n  [FrontEnd:79] Service list updated:");
+		for(Map.Entry<String, NameRecord> rec: this.serviceList.entrySet()){
+			System.out.println("[Frontend:81] service " + rec.getValue().getStub().getServiceName());
+			for(EndPoint ep : rec.getValue().getEndPoints())
+				System.out.println("            endpoint " + ep.getEndpoint());
+		}
+		System.out.println("--------------------------------------");
+	}
+
 	public void updateServices(){
 		String hostNS 	= Network.recoverAddress(this.getProperties().getProperties().getProperty("naming_host"));
 		int portNS		= Integer.parseInt(this.getProperties().getProperties().getProperty("naming_port"));
 		NamingStub name = null;
 		
-		System.out.println("[FrontEnd] Building service list ...");
+		System.out.println("[FrontEnd:112] Building service list ...");
 		
 		try {
 			name = new NamingStub(hostNS, portNS);
 			this.serviceList = name.getRegistry();
-//			System.out.println(this.serviceList.get("management").getStub().getClassName());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("[FrontEnd] Service list is DONE:");
-/*		for(Map.Entry<String, NameRecord> record: this.serviceList.entrySet()){
-			System.out.println("[Frontend:95] service " + record.getValue().getStub().getServiceName());
-			for(EndPoint ep : record.getValue().getEndPoints())
-				System.out.println("[Frontend:99] endpoint " + ep.getEndpoint());
-		}
-*/	}
+		System.out.println("[FrontEnd:120] Service list is DONE:");
+		for(Map.Entry<String, NameRecord> record : this.serviceList.entrySet()){
 
+			System.out.println("                service " + record.getValue().getStub().getServiceName());
+			for(EndPoint ep : record.getValue().getEndPoints())
+				System.out.println("                      endpoint " + ep.getEndpoint());
+		}
+	}
+
+	public void addAllNodes(Set<EndPoint> endpoints){
+		if(this.nodes == null)
+			this.nodes = new HashSet<EndPoint>();
+		this.nodes.addAll(endpoints);
+	}
+
+	public void addNode(EndPoint endpoint){
+		if(this.nodes == null)
+			this.nodes = new HashSet<EndPoint>();
+		this.nodes.add(endpoint);
+	}
+
+	public Set<EndPoint> getNodes(){
+		return this.nodes;
+	}
+	
 	public void start(){
 		this.publishServices();
 		this.updateServices();

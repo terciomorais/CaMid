@@ -13,8 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observer;
 import java.util.Set;
+
 import com.google.gson.Gson;
 
+import br.ufpe.cin.in1118.management.analysing.Analysis;
 import br.ufpe.cin.in1118.management.monitoring.Agent;
 import br.ufpe.cin.in1118.management.monitoring.InvokingDataPoint;
 import br.ufpe.cin.in1118.management.node.NodeManager;
@@ -59,6 +61,10 @@ public class ObjectMonitor implements Runnable{
 		}
 	}
 	
+	public Map<String, List<InvokingDataPoint>> getTimeSeries(){
+		return this.timeseries;
+	}
+
 	public void addTimeSeries(String service, List<InvokingDataPoint> idp){
 		this.timeseries.put(service, idp);
 	}
@@ -81,19 +87,22 @@ public class ObjectMonitor implements Runnable{
 							//System.out.println("                  monitored service: " + st);
 							if(ag.getEvents(st) != null && !ag.getEvents(st).isEmpty()){
 								InvokingDataPoint dataPoint = new InvokingDataPoint(ag.getEvents(st));
-								
 								if(!this.timeseries.containsKey(st))
 									this.timeseries.put(st, new ArrayList<>());
 								this.timeseries.get(st).add(dataPoint);
-								System.out.println("[ObjectMonitor-88] timeseries size: " + this.timeseries.get(st).size());
+
+								Analysis analysis = NodeManager.getInstance().getObjectAnalyser().analyse(st, dataPoint);
+								if(analysis.getAlertMessage().equals("anObject"));
+
+								//System.out.println("[ObjectMonitor:92] Response time average: " + new BigDecimal(dataPoint.getStatistics().getAverage()).toPlainString());
 								ag.clearEvents();
 							}
 							
-							if(NodeManager.getInstance().getAnalyser().analyse(this.getLastDataPoint(st).getStatistics().getAverage()) != 0){
+/* 							if(NodeManager.getInstance().getObjectAnalyser().analyse(this.getLastDataPoint(st).getStatistics().getAverage()) != 0){
 								System.out.println("[ObjectMonitor:81] Average " + this.getLastDataPoint(st).getStatistics().getAverage());
 								//System.out.println("[ObjectMonitor:84] Threshold " + NodeManager.getInstance().getAnalyser().get;
-								NodeManager.getInstance().alert(NodeManager.getInstance().getAnalyser().analyse(this.getLastDataPoint(st).getStatistics().getAverage()));
-							}
+								NodeManager.getInstance().alert(NodeManager.getInstance().getObjectAnalyser().analyse(this.getLastDataPoint(st).getStatistics().getAverage()));
+							} */
 							
 							if(this.timeseries.get(st).size() >= 10000){
 								this.saveToFile(st);
@@ -111,6 +120,11 @@ public class ObjectMonitor implements Runnable{
 		Calendar calendar = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("-yyyy-MMM-dd");
 		calendar.setTimeInMillis(System.currentTimeMillis());
+
+		File folder = new File(fileLog);
+		if(!folder.exists())
+			folder.mkdirs();
+		
 		fileLog = fileLog.concat(service + sdf.format(calendar.getTime()) + ".log");
 		Gson gson = new Gson();
 		String tsString = gson.toJson(this.timeseries.get(service));

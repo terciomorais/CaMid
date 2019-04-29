@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -98,8 +97,9 @@ public class Broker {
 		if(((String)Broker.systemProps.getProperties().get("system_monitor")).equals("enable")
 				|| ((String)Broker.systemProps.getProperties().get("object_monitor")).equals("enable")){
 			this.setManagerEnabled(true);
+			String service = "NodeManagerService".toLowerCase() + '@' + Network.recoverAddress("localhost");
 			try {
-				Broker.registry.addService("NodeManagerService", Class.forName("br.ufpe.cin.in1118.management.node.NodeManagerService"));
+				Broker.registry.addService(service, Class.forName("br.ufpe.cin.in1118.management.node.NodeManagerService"));
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -150,7 +150,7 @@ public class Broker {
 		return Broker.naming;
 	}
 
-	public boolean isManagerEnable() {
+	public boolean isManagerEnabled() {
 		return this.managerEnabled;
 	}
 
@@ -164,9 +164,9 @@ public class Broker {
 		return executor;
 	}
 
-	public LocalServiceRegistry getRegistry() {
+/* 	public LocalServiceRegistry getRegistry() {
 		return registry;
-	}
+	} */
 
 	public void setRegistry(LocalServiceRegistry registry) {
 		Broker.registry = registry;
@@ -230,6 +230,9 @@ public class Broker {
 		}
 	}
 
+	public static LocalServiceRegistry getRegistry(){
+		return Broker.registry;
+	}
 	public static Class<?> getStub(String className) throws ClassNotFoundException {
 		return Class.forName("br.ufpe.cin.in1118.distribution.stub." + className + "Stub");
 	}
@@ -293,13 +296,15 @@ public class Broker {
 	}
 
 	private void startManagement(){
-		if(this.isManagerEnable()){
+		if(this.isManagerEnabled()){
 			this.setNodeManager(NodeManager.getInstance());
 			if(((String)Broker.systemProps.getProperties().get("system_monitor")).equals("enable"))
 				this.getNodeManager().setSysMonitorEnabled(true);
 
-			if(((String)Broker.systemProps.getProperties().get("object_monitor")).equals("enable"))
-				this.getNodeManager().setObjectMonitorEnable(true);
+			if(((String)Broker.systemProps.getProperties().get("object_monitor")).equals("enable")){
+				this.getNodeManager().setObjectMonitorEnabled(true);
+				this.nodeManager.getObjectMonitor().setAgents(EventSourceFactory.getInstance().getObservers());
+			}
 
 			//Registering observers for all services.
 			if(Broker.ROLE.equals("registry"))
@@ -310,7 +315,7 @@ public class Broker {
 					EventSourceFactory.getInstance().registerObserver(Broker.registry.getRemoteObjectClass(str).getName(), new Agent(str));
 			}
 
-			this.nodeManager.getObjectMonitor().setAgents(EventSourceFactory.getInstance().getObservers());
+			//this.nodeManager.getObjectMonitor().setAgents(EventSourceFactory.getInstance().getObservers());
 			this.getNodeManager().start();
 		}
 	}

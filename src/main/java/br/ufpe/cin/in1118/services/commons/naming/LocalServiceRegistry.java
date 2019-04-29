@@ -1,6 +1,7 @@
 package br.ufpe.cin.in1118.services.commons.naming;
 
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;

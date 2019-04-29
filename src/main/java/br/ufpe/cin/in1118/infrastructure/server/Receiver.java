@@ -25,7 +25,7 @@ public class Receiver implements Runnable{
 	private Invoker				invoker			= null;
 	private EventSource			eventSource		= null;
 
-	private boolean	isMonitored	= NodeManager.getInstance().isObjectMonitorEnable();
+	private boolean	isMonitored	= NodeManager.getInstance().isObjectMonitorEnabled();
 
 	public Receiver(Socket conn){
 		/*		initTime = System.currentTimeMillis();*/
@@ -45,12 +45,15 @@ public class Receiver implements Runnable{
 			this.inFromClient		= new ObjectInputStream(new BufferedInputStream(this.conn.getInputStream()));
 			this.receivedMessage	= (Message) this.inFromClient.readObject();
 			String magic			= this.receivedMessage.getHeader().getMagic();
-			if(this.receivedMessage.getHeader().getMagic().equals("management")){
-				if(this.receivedMessage.getBody().getRequestHeader().getServiceName().equals("NodeManager")){
-					//NodeManagerService nms = new NodeManagerService(this.receivedMessage);
-					//Broker.getExecutorInstance().execute(nms);
-				}
-			} else {
+
+
+/* 			if(!this.receivedMessage.getBody().getRequestHeader().getServiceName().equals("delay")){
+				System.out.println("[Receiver:118] Received message: " + this.receivedMessage);
+				System.out.println("[Receiver:119] Body of received message: " + this.receivedMessage.getBody());
+				System.out.println("[Receiver:220] Request header of received message: " + this.receivedMessage.getBody().getRequestHeader());
+				System.out.println("[Receiver:221] Service of received message: " + this.receivedMessage.getBody().getRequestHeader().getServiceName());
+				System.out.println("[Receiver:222] Method of received message: " + this.receivedMessage.getBody().getRequestHeader().getOperation());
+			} */
 				Message msg = this.receivedMessage;
 				this.invoker = new Invoker(msg);
 
@@ -59,7 +62,7 @@ public class Receiver implements Runnable{
 				this.replyMessage.addRouteTrack(Network.recoverAddress("localhost"));
 				this.outToClient.writeObject(this.replyMessage);
 				this.outToClient.flush();
-			}
+		//	}
 
 			//set up the event
 			if (this.isMonitored){
@@ -77,7 +80,7 @@ public class Receiver implements Runnable{
 				this.eventSource.getEvent().setService(this.receivedMessage
 						.getBody().getRequestHeader().getServiceName());
 			}
-			System.out.println("[Receiver:68] Error I/O exception (Message no. "
+			System.out.println("[Receiver:80] Error I/O exception (Message no. "
 					+ this.replyMessage.getUniqueID()
 					+ "; context: " + Broker.getROLE()
 					+ "): " + ioe.getMessage());
@@ -92,7 +95,7 @@ public class Receiver implements Runnable{
 			}
 
 			//Preparing and responding with error
-			System.out.println("[Receiver-71] Error Class not found exception (Message no. "
+			System.out.println("[Receiver:95] Error Class not found exception (Message no. "
 				+ this.replyMessage.getUniqueID() + "): "
 				+ cnfe.getMessage());
 			cnfe.printStackTrace();
@@ -103,7 +106,9 @@ public class Receiver implements Runnable{
 			try {
 				this.outToClient.writeObject(this.replyMessage);
 				this.outToClient.flush();
-			} catch (IOException e) {}
+			} catch (IOException e) {
+				System.out.println("[Receiver:107] Error trying to respond to client");
+			}
 			/*			System.out.println("[Receiver:95] Processing time "
 					+ (System.currentTimeMillis() - initTime));*/
 
@@ -115,8 +120,7 @@ public class Receiver implements Runnable{
 				// 	.getHostAddress() + ":" + conn.getLocalPort());
 				
 				this.eventSource.notifyObservers();
-				this.eventSource.getEvent().setService(this.receivedMessage
-						.getBody().getRequestHeader().getServiceName());
+				this.eventSource.getEvent().setService(this.receivedMessage.getBody().getRequestHeader().getServiceName());
 			}
 
 			try {
