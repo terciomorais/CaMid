@@ -10,7 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.hyperic.sigar.Sigar;
 
 public class SigarLoader {
-	private static final String SIGAR_PATH = "libs/sigar/";
+	private static final String SIGAR_PATH = "/root/libs/sigar/";
 	private static final String[] LIBS = new String [] {
 		"sigar-amd64-winnt.dll",
 		"libsigar-sparc64-solaris.so",

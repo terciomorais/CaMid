@@ -1,12 +1,19 @@
 package br.ufpe.cin.in1118.application.remoteObject;
 
+import java.io.IOException;
+
 import br.ufpe.cin.in1118.distribution.stub.IDelay;
 
-public class Delay implements IDelay{
-	public void delay(int serviceTime){
+public class Delay implements IDelay {
+	public void delay(int serviceTime) {
 		long ini = System.currentTimeMillis();
 		long end = System.currentTimeMillis();
-		while((end - ini) < serviceTime)
+		while ((end - ini) < serviceTime)
 			end = System.currentTimeMillis();
+		try {
+			Runtime.getRuntime().exec("clear");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -4,6 +4,28 @@
     // Para obter mais informações, visite: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - CloudManagerTester",
+            "request": "launch",
+            "mainClass": "tests.CloudManagerTester",
+            "projectName": "exercicio04RemotePatterns"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - NodeManagerTester",
+            "request": "launch",
+            "mainClass": "tests.NodeManagerTester",
+            "projectName": "exercicio04RemotePatterns"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - OpennebulaTest",
+            "request": "launch",
+            "mainClass": "tests.OpennebulaTest",
+            "projectName": "exercicio04RemotePatterns"
+        },
         {
             "type": "java",
             "name": "CodeLens (Launch) - ClientDomainManager",
@@ -25,7 +47,8 @@
             "name": "CodeLens (Launch) - ClientDelay",
             "request": "launch",
             "mainClass": "br.ufpe.cin.in1118.application.client.ClientDelay",
-            "projectName": "exercicio04RemotePatterns"
+            "projectName": "exercicio04RemotePatterns",
+            "args": "10.66.66.10 1111 100"
         },
         {
             "type": "java",
@@ -53,6 +76,14 @@
             "name": "Debug (Launch) - Current File",
             "request": "launch",
             "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - ClassicWorkLoader",
+            "request": "launch",
+            "mainClass": "br.ufpe.cin.in1118.application.client.ClassicWorkLoader",
+            "projectName": "exercicio04RemotePatterns",
+            "args": "10.66.66.10 1111 10 1 3 1 1 MNG_ON 10"
         }
     ]
 }

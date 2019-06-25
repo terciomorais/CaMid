@@ -7,6 +7,8 @@ import br.ufpe.cin.in1118.management.monitoring.SystemDataPoint;
 
 public interface INodeManagerService {
 	public void addService(String serviceName, String className);
+	public void addService(String serviceName, Stub stub);
+	public void removeService(String serviceName);
 	public Map<String, List<InvokingDataPoint>> getServiceData();
 	public SystemDataPoint getSystemData();
 }

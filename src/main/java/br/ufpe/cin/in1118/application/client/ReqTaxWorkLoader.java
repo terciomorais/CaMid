@@ -43,7 +43,7 @@ public class ReqTaxWorkLoader {
 
 		//ramp up
 		int sumT = 0;
-		for(int i = 0; i < 11; i++){
+		for(int i = 0; i < 200; i++){
 			long b = System.currentTimeMillis();
 			delay.delay(1);
 			sumT += System.currentTimeMillis() - b;
@@ -99,8 +99,8 @@ public class ReqTaxWorkLoader {
 									? ev.getElapsedTime()
 									: maxValue;
 
-						sum+= ev.getElapsedTime();
-						squareSum += ev.getElapsedTime() * ev.getElapsedTime();
+						sum			+= ev.getElapsedTime();
+						squareSum	+= ev.getElapsedTime() * ev.getElapsedTime();
 					} else {
 						SenderRunner.success.decrementAndGet();
 						SenderRunner.systemFails.incrementAndGet();

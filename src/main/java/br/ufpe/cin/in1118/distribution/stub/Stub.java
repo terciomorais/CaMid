@@ -120,6 +120,7 @@ public abstract class Stub implements Serializable{
 		
 		if(parameterValues != null)
 			this.invocation.setParameters(clazz.getEnclosingMethod().getParameters(), parameterValues);
+		
 		if(clazz.getEnclosingMethod().getReturnType().equals(Void.TYPE))
 			this.invocation.setHasReturn(false);
 		else

@@ -17,18 +17,20 @@ public class Analysis implements Serializable{
     
     private static final long serialVersionUID = -6243005645199171953L;
 
-    private String                                  alertMessage            = "regular";
-    private boolean                                 resourceAlert           = false;
-    private boolean                                 serviceAlert            = false;
-    private boolean                                 objectMonitorEnabled    = false;
-    private boolean                                 systemMonitorEnabled    = false;
-    private SystemDataPoint                         sysDataPoint            = null;
-    private List<String>                            services                = new ArrayList<String>(Broker.getRegistry().getAllServiceNames());
-    private Map<String, List<InvokingDataPoint>>    servicesMetering        = null;
-    private String                                  sourceNode              = Network.recoverAddress("localhost");
-    private Set<EndPoint>                           availableNodes          = null;
-    private List<SystemDataPoint>                   nodesSystemData         = null;
-    private List<SystemDataPoint>                   replicaSystemData       = null;
+    private String                                  alertMessage                = "regular";
+    private String                                  service                     = null;
+    private boolean                                 resourceAlert               = false;
+    private boolean                                 serviceAlert                = false;
+    private boolean                                 objectMonitorEnabled        = false;
+    private boolean                                 systemMonitorEnabled        = false;
+    private SystemDataPoint                         sysDataPoint                = null;
+    private List<String>                            services                    = new ArrayList<String>(Broker.getRegistry().getAllServiceNames());
+    private Map<String, List<InvokingDataPoint>>    servicesMetering            = null;
+    private String                                  sourceNode                  = Network.recoverAddress("localhost");
+    private Set<EndPoint>                           serviceEndPoints            = null;
+    private Set<EndPoint>                           availableNodes              = null;
+    private Map<String, SystemDataPoint>            availableNodesSystemData    = null;
+    private Map<String, SystemDataPoint>            replicaSystemData           = null;
     
     public Analysis(){}
 
@@ -38,6 +40,14 @@ public class Analysis implements Serializable{
 
     public String getAlertMessage() {
         return this.alertMessage;
+    }
+
+    public String getService() {
+        return this.service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
     }
 
     public void setAlertMessage(String alertMessage) {
@@ -93,7 +103,7 @@ public class Analysis implements Serializable{
     }
 
 	public void setServicesMetering(Map<String, List<InvokingDataPoint>> timeseries) {
-        this.servicesMetering = new HashMap<String, List<InvokingDataPoint>>(timeseries);// timeseries;
+        this.servicesMetering = new HashMap<String, List<InvokingDataPoint>>(timeseries);
     
     }
 
@@ -102,6 +112,14 @@ public class Analysis implements Serializable{
     }
     public String getSourceNode() {
         return this.sourceNode;
+    }
+
+    public Set<EndPoint> getServiceEndPoints() {
+        return this.serviceEndPoints;
+    }
+
+    public void setServiceEndPoints(Set<EndPoint> serviceEndPoints) {
+        this.serviceEndPoints = serviceEndPoints;
     }
 
     public List<String> getServices() {
@@ -117,32 +135,32 @@ public class Analysis implements Serializable{
     }
 
 
-    public List<SystemDataPoint> getNodesSystemData() {
-        return this.nodesSystemData;
+    public Map<String, SystemDataPoint> getAvailableNodesSystemData() {
+        return this.availableNodesSystemData;
     }
 
-    public void setNodesSystemData(List<SystemDataPoint> nodesSystemData) {
-        this.nodesSystemData = nodesSystemData;
+    public void setAvailableNodesSystemData(Map<String, SystemDataPoint> nodesSystemData) {
+        this.availableNodesSystemData = nodesSystemData;
     }
 
-    public void addNodeSystemData(SystemDataPoint sdp){
-        if(this.nodesSystemData == null)
-            this.nodesSystemData = new ArrayList<SystemDataPoint>();
-        this.nodesSystemData.add(sdp);
+    public void addAvailableNodesSystemData(String ep, SystemDataPoint sdp){
+        if(this.availableNodesSystemData == null)
+            this.availableNodesSystemData = new HashMap<String, SystemDataPoint>();
+        this.availableNodesSystemData.put(ep, sdp);
     }
 
-    public List<SystemDataPoint> getReplicaSystemData() {
+    public Map<String, SystemDataPoint> getReplicaSystemData() {
         return this.replicaSystemData;
     }
 
-    public void setReplicaSystemData(List<SystemDataPoint> replicaSystemData) {
+    public void setReplicaSystemData(Map<String, SystemDataPoint> replicaSystemData) {
         this.replicaSystemData = replicaSystemData;
     }
 
-    public void addReplicaSystemData(SystemDataPoint sdp){
+    public void addReplicaSystemData(String ep, SystemDataPoint sdp){
         if(this.replicaSystemData == null)
-            this.replicaSystemData = new ArrayList<SystemDataPoint>();
-        this.replicaSystemData.add(sdp);
+            this.replicaSystemData = new HashMap<String, SystemDataPoint>();
+        this.replicaSystemData.put(ep, sdp);
     }
 
 }

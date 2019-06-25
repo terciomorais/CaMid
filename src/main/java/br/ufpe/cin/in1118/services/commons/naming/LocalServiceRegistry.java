@@ -11,7 +11,7 @@ public class LocalServiceRegistry {
 
 	private static	LocalServiceRegistry	INSTANCE			= null;
 	private 		Map<String, Class<?>>	serviceRegistry		= null;
-	private 		PropertiesSetup			remoteProperties	= new PropertiesSetup("config/remote.properties");
+	private 		PropertiesSetup			remoteProperties	= new PropertiesSetup("/root/config/remote.properties");
 
 	public LocalServiceRegistry() {
 		this.serviceRegistry = new TreeMap<String, Class<?>>();
@@ -60,6 +60,10 @@ public class LocalServiceRegistry {
 	
 	public void addService(String serviceName, Class<?> clazz){
 		this.serviceRegistry.put(serviceName, clazz);
+	}
+	
+	public void removeService(String serviceName){
+		this.serviceRegistry.remove(serviceName);
 	}
 	
 	public void create(){

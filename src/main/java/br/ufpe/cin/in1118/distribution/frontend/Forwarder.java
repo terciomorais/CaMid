@@ -12,27 +12,35 @@ public class Forwarder implements IForwarder{
 	@Override
 	public Message forward(Message incomingMessage) {
 		
-		String magic = incomingMessage.getBody().getRequestHeader().getServiceName();
-		incomingMessage.getHeader().setMagic("request");
-
-		if(FrontEnd.getInstance().getService(magic).getEndPoints().isEmpty())
+		String service = incomingMessage.getBody().getRequestHeader().getServiceName();
+		if(FrontEnd.getInstance().getService(service).getEndPoints().isEmpty())
 			FrontEnd.getInstance().updateServices();
 		
-		NameRecord nr = FrontEnd.getInstance().getService(magic);
+		NameRecord nr = FrontEnd.getInstance().getService(service);
 		
+		String[] endpoint = null;
 		if(nr.getEndPoints().size() == 1){
-			String[] endpoint = nr.getEndPoints().iterator().next().getEndpoint().split(":");
-			clientObjectSender = new ClientSender(endpoint[0], Integer.parseInt(endpoint[1]),incomingMessage);
-			
+			endpoint = nr.getEndPoints().iterator().next().getEndpoint().split(":");
+			//System.out.println("\n[Forwarder:23] Redirecting to single instance " + incomingMessage.getHeader().getMagic());
+			clientObjectSender = new ClientSender(endpoint[0], Integer.parseInt(endpoint[1]), incomingMessage);
 		} else if (nr.getEndPoints().size() > 1){
-			String[] endpoint = nr.getSchduller().getNextEndPoint().getEndpoint().split(":");
+			endpoint = nr.getSchduller().getNextEndPoint().getEndpoint().split(":");
+			/* if(nr.getSchduller().getTax() == 0){
+				endpoint = nr.getSchduller().getNextEndPoint().getEndpoint().split(":");
+				nr.getSchduller().setTax(nr.getSchduller().getTax() + 1);
+			} else {
+				nr.getSchduller().setTax(nr.getSchduller().getTax() - 1);
+			}
+			 */
+			/* System.out.println("\n[Forwader:35] Redirecting service "+ service + " to " + endpoint[0] + ":" + endpoint[1]
+							 + "\n              Incominng message " + incomingMessage.getHeader().getMagic()); */
 			clientObjectSender = new ClientSender(endpoint[0], Integer.parseInt(endpoint[1]), incomingMessage);
 		
 		} else {
 			Message msg = new Message();
 			msg.setStatus(Message.ResponseStatus.ROUTING_EXCEPTION);
 			msg.setStatusMessage("Error: remote object is not registered on Name Service.");
-			return  msg;
+			return msg;
 		}
 
 		Message msg = this.clientObjectSender.call();

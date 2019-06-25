@@ -19,7 +19,9 @@ public class EventSourceFactory {
 	}
 	
 	public void registerObserver(String key, Observer observer) {
-		System.out.println("[EventSourceFactory] service name " + key);
+		
+		System.out.println("| [EventSourceFactory:22] Registering Monitor Observer for " + key.substring(key.lastIndexOf('.') + 1) + " service.");
+		
 		this.observers.put(key, observer);
 	}
 	

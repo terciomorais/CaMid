@@ -26,8 +26,8 @@ public class InvokingDataPoint {
 
 	public synchronized void setDataPoint(){
 		if(!events.isEmpty()){
-			long 	max = events.get(0).getElapsedTime();
-			long 	min = events.get(0).getElapsedTime();
+			long max		= events.get(0).getElapsedTime();
+			long min		= events.get(0).getElapsedTime();
 			
 			long firstTime	= events.get(0).getStartTime();
 			long lastTime	= events.get(0).getStartTime();
@@ -68,10 +68,7 @@ public class InvokingDataPoint {
 	public Event getLastEvent(){
 		return this.events.get(this.events.size() - 1);
 	}
-	
-	public double getThroughput(){
-		return this.events.size()/this.getInterval();
-	}
+
 	public DataPoint getStatistics(){
 		return this.statistics;
 	}

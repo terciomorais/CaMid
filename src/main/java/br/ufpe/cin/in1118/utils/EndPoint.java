@@ -16,6 +16,12 @@ public class EndPoint implements Serializable{
 		this.endpoint = endpoint;
 	}
 	
+	public EndPoint(String host, int port){
+		this.endpoint	= host + ":" + port;
+		this.host		= host;
+		this.port		= port;
+	}
+	
 	public String getEndpoint(){
 		return this.endpoint;
 	}
@@ -36,9 +42,11 @@ public class EndPoint implements Serializable{
 	}
 
 	public boolean equals(Object obj){
-		if (this == obj) return true;
-		else if(obj != null 
-				&& this.getEndpoint().equals(((EndPoint)obj).getEndpoint())) return true;
-		else return false;
+		if (this == obj)
+			return true;
+		else if(obj != null && this.getEndpoint().equals(((EndPoint)obj).getEndpoint()))
+			return true;
+		else
+			return false;
 	}
 }

@@ -18,7 +18,14 @@ public class NodeManagerServiceStub extends Stub implements INodeManagerService 
 		super.prepare(clazz, paramValues);
 		this.reply = this.request();
 	}
-
+	@Override
+	public void addService(String serviceName, Stub stub) {
+		class Local {};
+		Class<?> clazz = Local.class;
+		Serializable[] paramValues = {serviceName, stub};
+		super.prepare(clazz, paramValues);
+		this.reply = this.request();
+	}
 	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, List<InvokingDataPoint>> getServiceData() {
@@ -38,5 +45,14 @@ public class NodeManagerServiceStub extends Stub implements INodeManagerService 
 		this.reply = this.request();
 
 		return (SystemDataPoint) this.reply.getResponse();
+	}
+
+	@Override
+	public void removeService(String serviceName) {
+		class Local {};
+		Class<?> clazz = Local.class;
+		Serializable[] paramValues = {serviceName};
+		super.prepare(clazz, paramValues);
+		this.reply = this.request();
 	}
 }

@@ -55,8 +55,9 @@ public class NameRecord implements Serializable {
 	public void removeRemoteEndPoint(String endpoint){
 		Iterator<EndPoint> it = this.endpoints.iterator();
 		while(it.hasNext())
-			if(it.next().getEndpoint().equals(endpoint))
+			if(it.next().getEndpoint().equals(endpoint)){
 				it.remove();
+			}
 	}
 
 	public Stub getStub() {

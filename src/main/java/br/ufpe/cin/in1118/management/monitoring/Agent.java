@@ -1,18 +1,16 @@
 package br.ufpe.cin.in1118.management.monitoring;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Agent implements Observer{
 	private String name;
 	private String context;
-	private Map<String, List<Event>> servicesEvents	= Collections.synchronizedMap(new HashMap<>());
-	//private List<Event> events = Collections.synchronizedList(new ArrayList<Event>());
+	private Map<String, List<Event>> servicesEvents	= new ConcurrentHashMap<String, List<Event>>();
 	
 	public Agent(){}
 	

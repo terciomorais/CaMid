@@ -3,6 +3,7 @@ package br.ufpe.cin.in1118.application.client;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import br.ufpe.cin.in1118.distribution.stub.DelayStub;
@@ -39,24 +40,25 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 		SenderRunner.createMetricList();
 		this.isByTax = true;
 	}
-	public SenderRunner(int reqTax, int serviceTime, int time, String host, int port, boolean isByTax){
-		this.serviceTime			= serviceTime;
-		NamingStub naming			= new NamingStub(host, port);
-		this.delay					= (DelayStub) naming.lookup("delay");
-		this.sleep					= 1000/reqTax;
-		this.serviceTime			= serviceTime;
-		this.times					= time;
-		SenderRunner.createMetricList();
-		this.isByTax = false;
-	}
 
-	public SenderRunner(DelayStub delay, int serviceTime, int experimentTime) {
+	public SenderRunner(DelayStub delay, int serviceTime, int experimentTime, int interval, boolean isByTax) {
 		this.serviceTime			= serviceTime;
 		this.delay					= delay;
 		this.times					= experimentTime;
 		this.serviceTime			= serviceTime;
-		SenderRunner.createMetricList();
-		this.isByTax = true;
+		this.isByTax 				= isByTax;
+		this.sleep					= interval;
+		SenderRunner.createMetricList();	
+	}
+
+	public SenderRunner(DelayStub delay, int serviceTime, int experimentTime, int interval) {
+		this.serviceTime			= serviceTime;
+		this.delay					= delay;
+		this.times					= experimentTime;
+		this.serviceTime			= serviceTime;
+		this.isByTax 				= true;
+		this.sleep					= interval;
+		SenderRunner.createMetricList();	
 	}
 
 	public static void createMetricList(){
@@ -77,11 +79,11 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 		} else {
 			long iniTime = System.currentTimeMillis();
 			while((System.currentTimeMillis() - iniTime) < this.times)
-				this.invoke();
+				this.invoke(this.sleep);
 		}
 	}
 	
-	private void invoke() {
+/* 	private void invoke() {
 		Event event = new Event();
 		event.setStartTime(System.currentTimeMillis());
 		this.delay.delay(this.serviceTime);
@@ -93,9 +95,16 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 			SenderRunner.success.incrementAndGet();
 		else
 			SenderRunner.fails.incrementAndGet();		
-	}
+	} */
 
 	private void invoke(int sleep){
+		int factor = 1 + (20 * sleep)/100;
+		Random randon = new Random();
+		try {
+			Thread.sleep(sleep + factor - randon.nextInt(factor*2));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}		
 		Event event = new Event();
 		event.setStartTime(System.currentTimeMillis());
 		this.delay.delay(this.serviceTime);
@@ -107,11 +116,5 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 			SenderRunner.success.incrementAndGet();
 		else
 			SenderRunner.fails.incrementAndGet();
-		
-		try {
-			Thread.sleep(sleep);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 }

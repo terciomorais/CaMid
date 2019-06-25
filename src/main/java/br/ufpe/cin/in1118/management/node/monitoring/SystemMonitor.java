@@ -103,8 +103,8 @@ public class SystemMonitor implements Runnable{
 	}
 
 	private void sendAlert(Analysis analysis){
-		ClientCloudManager cdm = new ClientCloudManager(analysis);
-		Broker.getExecutorInstance().execute(cdm);
+		ClientCloudManager cdm = new ClientCloudManager();
+		cdm.sendAlert(analysis);
 	}
 	
 	@Override
