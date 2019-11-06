@@ -22,6 +22,7 @@ import br.ufpe.cin.in1118.management.monitoring.SystemDataPoint;
 import br.ufpe.cin.in1118.management.node.ClientCloudManager;
 import br.ufpe.cin.in1118.management.node.NodeManager;
 import br.ufpe.cin.in1118.utils.EndPoint;
+import br.ufpe.cin.in1118.utils.Network;
 
 public class Adaptor {
 
@@ -43,47 +44,53 @@ public class Adaptor {
     }
 
     public void adapt() {
+
         if (this.analysis.getServiceAlert()) {
-            NodeManager.getInstance().getObjectAnalyser().setPaused(false);
             if (this.analysis.getAlertMessage().equals("response time overload")) {
                 //this.scaleUpVM();
-                //this.scaleUpApp(this.analysis.getService(), "10.66.66.12"); 
+                //this.scaleUpApp(this.analysis.getService(), "10.66.67.12");
                 this.scaleUpCloud(this.analysis.getService());
-            } else if(this.analysis.getAlertMessage().equals("response time underload")
-                    && FrontEnd.getInstance().getService(this.analysis.getService()).hasReplicas()){
-                //this.scaleDownApp(this.analysis.getService(), "10.66.66.12");
+            } else if (this.analysis.getAlertMessage().equals("response time underload")
+                    && FrontEnd.getInstance().getService(this.analysis.getService()).hasReplicas()) {
+                this.scaleDownApp(this.analysis.getService(), "10.66.67.12");
+                long ini = System.currentTimeMillis();
                 //this.scaleDownVM(3);
                 this.scaleDownCloud(this.analysis.getService());
+            } else {
+                NodeManager.getInstance().getObjectAnalyser().setPaused(false);
             }
-        } else if(this.analysis.getResourceAlert()){
-
-        }  
+        } else if (this.analysis.getResourceAlert()) {
+            // TODO
+        } else {
+            NodeManager.getInstance().getObjectAnalyser().setPaused(false);
+        }
     }
-    
-    private EndPoint selectCloud(){
-        ClientCloudManager                      ccm         = new ClientCloudManager();
-        Map<EndPoint, List<SystemDataPoint>>    clouds      = ccm.requestCloudResources();
-        EndPoint                                bestCloud   = null;
-        SystemDataPoint                         bestNode    = null;
 
-        if(clouds != null && !clouds.isEmpty()){
+    private EndPoint selectCloud() {
+        ClientCloudManager ccm = new ClientCloudManager();
+        Map<EndPoint, List<SystemDataPoint>> clouds = ccm.requestCloudResources();
+        EndPoint bestCloud = null;
+        SystemDataPoint bestNode = null;
+
+        if (clouds != null && !clouds.isEmpty()) {
             Iterator<EndPoint> it = clouds.keySet().iterator();
-            
-            while(it.hasNext()){
-                EndPoint ep = (EndPoint)it.next();
-                if(bestCloud == null){
+
+            while (it.hasNext()) {
+                EndPoint ep = (EndPoint) it.next();
+                if (bestCloud == null) {
                     bestCloud = ep;
                     Iterator<SystemDataPoint> itn = clouds.get(ep).iterator();
                     bestNode = itn.next();
-                    while(itn.hasNext()){
+                    while (itn.hasNext()) {
                         SystemDataPoint node = itn.next();
-                        bestNode = node.getCpuUsage().getAverage() < bestNode.getCpuUsage().getAverage() ? node : bestNode;
-                    } 
+                        bestNode = node.getCpuUsage().getAverage() < bestNode.getCpuUsage().getAverage() ? node
+                                : bestNode;
+                    }
                 } else {
                     Iterator<SystemDataPoint> itn = clouds.get(ep).iterator();
-                    while(itn.hasNext()){
+                    while (itn.hasNext()) {
                         SystemDataPoint node = itn.next();
-                        if(node.getCpuUsage().getAverage() < bestNode.getCpuUsage().getAverage()){
+                        if (node.getCpuUsage().getAverage() < bestNode.getCpuUsage().getAverage()) {
                             bestNode = node;
                             bestCloud = ep;
                         }
@@ -93,33 +100,34 @@ public class Adaptor {
         }
         return bestCloud;
     }
-    
+
     private boolean scaleUpApp(String service, String host) {
         NodeManagerServiceStub nodeManager = null;
         int attemps = 0;
-        do{
-            nodeManager = (NodeManagerServiceStub) Broker.getNaming().lookup("NodeManagerService".toLowerCase() + "@" + host);
+        do {
+            nodeManager = (NodeManagerServiceStub) Broker.getNaming()
+                    .lookup("NodeManagerService".toLowerCase() + "@" + host);
             attemps++;
-        } while(nodeManager == null && attemps < 3);
+        } while (nodeManager == null && attemps < 3);
 
-        if (nodeManager != null){
+        if (nodeManager != null) {
             nodeManager.setForwarded(false);
             nodeManager.addService(service, FrontEnd.getInstance().getService(service).getStub());
             return true;
         }
         return false;
     }
-    
-    private boolean scaleDownApp(String service, String host){
+
+    private boolean scaleDownApp(String service, String host) {
         NodeManagerServiceStub nodeManager = null;
         int attemps = 0;
-        do{
-            nodeManager = (NodeManagerServiceStub) Broker.getNaming().lookup("NodeManagerService".toLowerCase() + "@" + host);
+        do {
+            nodeManager = (NodeManagerServiceStub) Broker.getNaming()
+                    .lookup("NodeManagerService".toLowerCase() + "@" + host);
             attemps++;
-        } while(nodeManager == null && attemps < 3);
+        } while (nodeManager == null && attemps < 3);
 
-        
-        if (nodeManager != null){
+        if (nodeManager != null) {
             nodeManager.setForwarded(false);
             nodeManager.removeService(service);
             return true;
@@ -128,11 +136,13 @@ public class Adaptor {
     }
 
     private boolean scaleUpVM() {
+        // System.out.println("[Adaptor:142] method scaleUpVM");
+        long iniTime = System.currentTimeMillis();
         // set a new node
-        VirtualMachine              vm      = null;
-        boolean                     flag    = false;
-        ResourceController          cms     = new ResourceController();
-        Iterator<VirtualMachine>    it      = cms.getVMPool().iterator();
+        VirtualMachine vm = null;
+        boolean flag = false;
+        ResourceController cms = new ResourceController();
+        Iterator<VirtualMachine> it = cms.getVMPool().iterator();
         while (it.hasNext()) {
             vm = it.next();
             if (vm.status().equals("poff") || vm.status().equals("unde") || vm.status().equals("stop")) {
@@ -140,7 +150,7 @@ public class Adaptor {
                 break;
             }
         }
-        
+
         if (flag) {
             OneResponse or = vm.resume();
             if (or.isError()) {
@@ -149,12 +159,15 @@ public class Adaptor {
             }
             String vmIP = cms.getVMIP(vm);
             System.out.println("\n--------------------------------------------");
-            System.out.println("[Adaptor:154] Resuming new VM at IP " + vmIP);
+            System.out.println("[Adaptor:165] Resuming new VM at IP " + vmIP);
             System.out.println("---------------------------------------------\n");
+
             try {
                 InetAddress inet = InetAddress.getByName(vmIP);
-                while (!inet.isReachable(180000));
-                if(inet.isReachable(3)){
+
+                while (!inet.isReachable(360000))
+                    ;
+                if (inet.isReachable(30)) {
                     FrontEnd.getInstance().updateServices();
                     return true;
                 } else {
@@ -171,57 +184,104 @@ public class Adaptor {
             return false;
     }
 
-    private boolean scaleDownVM(int vmID){
+    private boolean scaleDownVM(int vmID) {
         ResourceController cms = new ResourceController();
         System.out.println("\n--------------------------------------------");
-        System.out.println("[Adaptor:177] Undeploying VM " + vmID);
+        System.out.println("[Adaptor:194] Undeploying VM " + vmID);
         System.out.println("---------------------------------------------\n");
+        Thread.currentThread();
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            System.err.println("[Adaptor:196] Error in thread sleep");
+        }
         return cms.scaleDownVM(vmID);
     }
 
-    private boolean scaleUpCloud(String serviceName){
+    public boolean scaleUpCloud(String serviceName) {
         String[] endpoint = null;
-        if(Broker.getSystemProps().getProperties().containsKey("cloud_list")){
+        if (Broker.getSystemProps().getProperties().containsKey("cloud_list")) {
             endpoint = ((String) Broker.getSystemProps().getProperties().get("cloud_list")).split(":");
-            
-            String  cloudHost   = endpoint[0];
-            int     cloudPort   = Integer.parseInt(endpoint[1]);
-            
-            NamingStub  ns = new NamingStub(cloudHost, 1111);
-            
-            CloudManagerServiceStub cloudManager = (CloudManagerServiceStub)ns.lookup("management");
-            cloudManager.setForwarded(false);
-            Stub stub = Broker.getNaming().lookup(serviceName);
-            cloudManager.addServiceOnCloud(serviceName, stub);
-            stub.setHost(cloudHost);
-            stub.setPort(cloudPort);
-            stub.setFeHost(cloudHost);
-            stub.setFePort(cloudPort);
-            stub.setForwarded(true);
-            
-            Stub st = null;
-            int attemps = 0;
-            do{
-                st = ns.lookup(serviceName);
-                attemps++;
-            } while(st == null && attemps < 3);
-            
-            if(st != null){
-                Broker.getNaming().bind(serviceName, stub);
-                return true;
-            } else{ 
+
+            String targetCloudHost = endpoint[0];
+            int targetCloudPort = Integer.parseInt(endpoint[1]);
+
+            System.out.println("\n------------------------------------------------------------");
+            System.out.println("[Adaptor:208] Contacting another cloud at IP " + targetCloudHost);
+
+            NamingStub nsTargetCloud = new NamingStub(targetCloudHost, 1111);
+
+            CloudManagerServiceStub targetCloudManager = (CloudManagerServiceStub) nsTargetCloud.lookup("management");
+            targetCloudManager.setForwarded(false);
+
+            // preparing the stub to the new cloud
+            // it is taken from the source cloud
+            Stub stubService = Broker.getNaming().lookup(serviceName);
+            targetCloudManager.addServiceOnCloud(serviceName, stubService);
+
+            // Adding a new replica in the source registry
+            // int attemps = 0;
+
+            while (!targetCloudManager.serviceIsUp(serviceName)) {
+                // attemps++;
+                // System.out.println("[Adaptor:221] Tryings " + attemps);
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (targetCloudManager.serviceIsUp(serviceName)) {
+                stubService.setHost(targetCloudHost);
+                stubService.setPort(targetCloudPort);
+                stubService.setFeHost(Network.recoverAddress("localhost"));
+                stubService.setFePort(1212);
+                stubService.setForwarded(true);
+
+                System.out.println("------------------------------------------------------------\n");
+                int replicasNumber = FrontEnd.getInstance().getService(serviceName).getEndPoints().size();
+                Broker.getNaming().bind(serviceName, stubService);
+
+                while (FrontEnd.getInstance().getService(serviceName).getEndPoints().size() <= replicasNumber) {
+                    Thread.currentThread();
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        System.err.println("[Adaptor:248] Error on thread trying to sleep.");
+                    }
+                }
+
+                if(FrontEnd.getInstance().getService(serviceName).getEndPoints().size() > replicasNumber){
+                    NodeManager.getInstance().getObjectAnalyser().setPaused(false);
+                    System.out.println("\n-------------------------------------------------------------------------");
+                    System.out.println("[Adaptor:253] Reaction time: " + FrontEnd.getInstance().getReactionTime().getElapsedTime()
+                        + " ms\n             Analyser is paused? " + NodeManager.getInstance().getObjectAnalyser().isPaused()
+                        + "\n             Analiser is after adaptation? " + NodeManager.getInstance().getObjectAnalyser().isAfterAdaptation());
+                    System.out.println("--------------------------------------------------------------------------\n");
+                }
+                return true;  
+            } else{
                 return false;
-            } 
+            }
         } else{
             return false;
         }
     }
-
+    
     private boolean scaleDownCloud(String serviceName){
-        String      endpoint    = (String) Broker.getSystemProps().getProperties().get("cloud_list");
-        String      cloudHost   = endpoint.substring(0, endpoint.indexOf(':'));
-        NamingStub  ns          = new NamingStub(cloudHost, 1111);
-
+        
+        //Broker.getNaming().unbind(serviceName, new EndPoint("10.66.66.21", 1313));
+        
+        String      endpoint            = (String) Broker.getSystemProps().getProperties().get("cloud_list");
+        String      targetCloudHost     = endpoint.substring(0, endpoint.indexOf(':'));
+        NamingStub  ns                  = new NamingStub(targetCloudHost, 1111);
+        
+        System.out.println("\n------------------------------------------------------------");
+        System.out.println("[Adaptor:259] Undeploying VM of cloud at IP " + targetCloudHost);
+        System.out.println("------------------------------------------------------------\n");
+        
+        //this.scaleDownApp(serviceName, cloudHost);
         Broker.getNaming().unbind(serviceName, new EndPoint(endpoint));
         
         CloudManagerServiceStub cloudManager = (CloudManagerServiceStub)ns.lookup("management");

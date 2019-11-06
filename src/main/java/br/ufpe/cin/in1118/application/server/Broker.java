@@ -203,7 +203,7 @@ public class Broker {
 			try {
 				String className = Broker.registry.getRemoteObjectClass(serviceName).getSimpleName();
 				Class<?> clazz = Broker.getStub(className);
-				System.out.println("[Broker] Registering service "
+				System.out.println("[Broker:207] Registering service "
 						+ serviceName + ": " + clazz.getCanonicalName());
 				Broker.publishService(serviceName, clazz, fe_en, fe_host, fe_port, serverHost, serverPort);
 			} catch (ClassNotFoundException e) {
@@ -322,9 +322,9 @@ public class Broker {
 		try {	
 			if(this.server == null){
 				this.server = new ServerSocket(this.serverPort);
-				System.out.println("[Broker:328] " + ROLE
-						+ " server running and listening on port "
-						+ this.serverPort);
+				System.out.println("\n =================================================================");
+				System.out.println("|| [Broker:328] " + ROLE + " server running and listening on port " + this.serverPort + "||");
+				System.out.println(" =================================================================\n");
 			}
 
 			this.startManagement();

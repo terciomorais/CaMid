@@ -98,11 +98,9 @@ public class ObjectMonitor implements Runnable{
 									this.timeseries.put(st, new ArrayList<InvokingDataPoint>());
 								this.timeseries.get(st).add(dataPoint);
 
-								//Invoking Analyser
-								//Analysis analysis = null;
 								if(!st.contains("manage")){
 									Analysis analysis = NodeManager.getInstance().getObjectAnalyser().analyse(st, dataPoint);
-									if( !NodeManager.getInstance().getObjectAnalyser().isPaused() && analysis.getServiceAlert()){
+									if(!NodeManager.getInstance().getObjectAnalyser().isPaused() && analysis.getServiceAlert()){
 										NodeManager.getInstance().getObjectAnalyser().setPaused(true);
 										FrontEnd.getInstance().getAdaptor(analysis).adapt();
 										ag.getEvents(st).clear();

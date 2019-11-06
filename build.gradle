@@ -55,37 +55,37 @@ mainClassName = 'exercicio04RemotePatterns.App'
 
 remotes {
   c00 {
-    host      = '10.66.66.10'
+    host      = '10.66.67.10'
     user      = 'root'
     identity  = file('./auth/id_rsa-cloud00')
   }
   c00_node00 {
-    host = '10.66.66.11'
+    host = '10.66.67.11'
     user = 'root'
     identity  = file('./auth/id_rsa-cloud00')
   }
   c00_node01{
-    host = '10.66.66.12'
+    host = '10.66.67.12'
     user = 'root'
     identity  = file('./auth/id_rsa-cloud00')
   }
   c01 {
-    host      = '10.66.66.20'
+    host      = '10.66.67.20'
     user      = 'root'
     identity  = file('./auth/id_rsa-cloud01')
   }
   c01_node00 {
-    host = '10.66.66.21'
+    host = '10.66.67.21'
     user = 'root'
     identity  = file('./auth/id_rsa-cloud01')
   }
   c01_node01{
-    host = '10.66.66.22'
+    host = '10.66.67.22'
     user = 'root'
     identity  = file('./auth/id_rsa-cloud01')
   }
   client {
-    host      = '10.66.66.6'
+    host      = '10.66.67.6'
     user      = 'root'
     identity  = file('./auth/id_rsa-cloud00')
   }
@@ -207,8 +207,8 @@ task fullDeployCloud {
         remove 'config', 'libs', 'libs/sigar','scripts', 'logs'
         execute 'mkdir scripts logs config libs libs/sigar'
         
-        put from: files('config/registry.config', 'config/frontend.config', 'config/remote.properties'), into: '/root/config'
-        put from: files('scripts/frontend_server.sh','scripts/name_server.sh'), into: '/root/scripts'
+        //put from: files('config/registry.config', 'config/frontend.config', 'config/remote.properties'), into: '/root/config'
+        put from: files('scripts/app_server.sh', 'scripts/experiment_MNG_Replication_Classic.sh', 'scripts/experiment_MNG_OFF_Classic.sh', 'scripts/experiment_MNG_ON_Classic.sh', ), into: '/root/scripts'
         put from: file('libs/sigar/libsigar-amd64-linux.so'), into: '/root/libs/sigar'
 
         execute 'chmod 755 /root/exercicio04RemotePatterns.jar'

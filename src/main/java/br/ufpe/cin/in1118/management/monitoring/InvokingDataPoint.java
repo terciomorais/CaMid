@@ -9,6 +9,7 @@ public class InvokingDataPoint {
 	private DataPoint 	statistics	= null;
 	private List<Event>	events		= null;	
 	private long		interval	= 0;
+	private boolean		afterAdapt	= false;
 	
 	public InvokingDataPoint(){
 		this.events = Collections.synchronizedList(new ArrayList<Event>());
@@ -61,6 +62,18 @@ public class InvokingDataPoint {
 		return interval;
 	}
 
+	public boolean isAfterAdapt() {
+		return this.afterAdapt;
+	}
+
+	public boolean getAfterAdapt() {
+		return this.afterAdapt;
+	}
+
+	public void setAfterAdapt(boolean afterAdapt) {
+		this.afterAdapt = afterAdapt;
+	}
+	
 	private void setInterval(long interval) {
 		this.interval = interval;
 	}
@@ -72,4 +85,5 @@ public class InvokingDataPoint {
 	public DataPoint getStatistics(){
 		return this.statistics;
 	}
+
 }

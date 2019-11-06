@@ -153,15 +153,15 @@ public class ResourceController implements IDomainManagerStub{
 				InetAddress  inet = InetAddress.getByName(ip);
 				OneResponse rc = vm.resume();
 			    if( rc.isError() ){
-			        System.out.println( "failed!");
+			        System.out.println( "[ResourceController:156] failed!");
 			        throw new Exception( rc.getErrorMessage() );
 			    }
-				while(!inet.isReachable(180000));
-				if(inet.isReachable(10)){
-					//System.out.println("time spent to be reachable " + (System.currentTimeMillis() - init)/1000 + " ms");
+				while(!inet.isReachable(360000));
+				if(inet.isReachable(30)){
+					//System.out.println("[ResourceController:161]time spent to be reachable " + (System.currentTimeMillis() - init)/1000 + " ms");
 					FrontEnd.getInstance().updateServices();
 /*					for(EndPoint ep : FrontEnd.getInstance().getService("delay").getEndPoints()){
-						System.out.println("[DomainManager:52] Endpoint " + ep.getEndpoint());
+						System.out.println("[ResourceController:164] Endpoint " + ep.getEndpoint());
 					}*/
 				}
 			} catch (ClientConfigurationException e) {
@@ -188,13 +188,13 @@ public class ResourceController implements IDomainManagerStub{
 			ClientSender sender		= new ClientSender("10.66.66.43", 1313, message);
 			ClientRequestHandler.getInstance().submit(sender);
 		} else
-			System.out.println("Selecting a new VM and starting the remote object");
+			System.out.println("[ResourceController:191] Selecting a new VM and starting the remote object");
 		return true;
 	}
 
 	@Override
 	public void addService(String service, NameRecord record) {
-		System.out.println("[DomainManager:68] Updating services on CloudManager");
+		System.out.println("[ResourceController:197] Updating services on CloudManager");
 		FrontEnd.getInstance().addService(service, record);
 	}
 
@@ -202,17 +202,18 @@ public class ResourceController implements IDomainManagerStub{
 		try {
 			VirtualMachine vm = new VirtualMachine(vmID, oneClient);
 			String xml = vm.info().getMessage();
+			if(vm.status().equals("runn")){
 			OneResponse rc = vm.undeploy(false);
-			if( rc.isError() ){
-				System.out.println( "[ResourceController:206] Error on turning VM off");
-				throw new Exception( rc.getErrorMessage() );
+				if( rc.isError() ){
+					System.out.println( "[ResourceController:208] Error on turning VM off");
+					throw new Exception(rc.getErrorMessage());
+				}
 			}
 		} catch (ClientConfigurationException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		return true;
 	}
 }

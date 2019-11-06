@@ -4,12 +4,13 @@ import java.util.Set;
 
 import br.ufpe.cin.in1118.application.server.Broker;
 import br.ufpe.cin.in1118.distribution.frontend.FrontEnd;
-import br.ufpe.cin.in1118.distribution.stub.NodeManagerServiceStub;
 import br.ufpe.cin.in1118.management.monitoring.InvokingDataPoint;
 import br.ufpe.cin.in1118.management.monitoring.SystemDataPoint;
 import br.ufpe.cin.in1118.management.node.NodeManager;
 import br.ufpe.cin.in1118.utils.EndPoint;
 import br.ufpe.cin.in1118.utils.Network;
+import java.util.Queue;
+import java.util.LinkedList;
 
 public class Analyser {
 
@@ -18,11 +19,14 @@ public class Analyser {
 	private float 	rtLowerThreshold	= 0;
 	private float	rtHigherThreshold	= 0;
 	private boolean paused				= false;
+	private boolean	afterAdaptation		= false;
 	private double	lastServiceAlert	= 0;
+	private Queue<InvokingDataPoint> lastDataPoints = new LinkedList<InvokingDataPoint>();
 	
 	public Analyser(){
+
 		this.cpuLowerThreshold =
-				Broker.getSystemProps().getProperties().containsKey("cpu_lower_threshold")
+				Broker.getSystemProps().getProperties().containsKey("cpu_lower_	threshold")
 				?Float.parseFloat((String) Broker.getSystemProps().getProperties().get("cpu_lower_threshold"))
 				:0;
 		this.cpuHigherThreshold =
@@ -53,7 +57,7 @@ public class Analyser {
 	}
 	
 	public boolean isPaused() {
-		return paused;
+		return this.paused;
 	}
 
 	public void setPaused(boolean paused) {
@@ -67,6 +71,20 @@ public class Analyser {
 	private void setLastServiceAlert(double lastServiceAlert) {
 		this.lastServiceAlert = lastServiceAlert;
 	}
+
+	public boolean isAfterAdaptation() {
+		return this.afterAdaptation;
+	}
+
+	public boolean getAfterAdaptation() {
+		return this.afterAdaptation;
+	}
+
+	private void setAfterAdaptation(boolean afterAdaptation) {
+		this.afterAdaptation = afterAdaptation;
+	}
+
+
 
 /*	public boolean analyse(double metric){
 		//call the domain manager if necessary
@@ -95,81 +113,88 @@ public class Analyser {
 
 	public Analysis analyse(String service, InvokingDataPoint dataPoint){
 
+		if (this.lastDataPoints.size() < 3){
+			this.lastDataPoints.add(dataPoint);
+		} else {
+			this.lastDataPoints.poll();
+			this.lastDataPoints.add(dataPoint);
+		}
+
 		Analysis analysis = new Analysis();
 		analysis.setService(service);
 		analysis.setSystemMonitorEnabled(NodeManager.getInstance().isSysMonitorEnabled());
 		analysis.setObjectMonitorEnabled(NodeManager.getInstance().isObjectMonitorEnabled());
-		analysis.setServiceEndPoints(FrontEnd.getInstance().getService(service).getEndPoints());
+		if(FrontEnd.getInstance().getService(service) != null){
+			analysis.setServiceEndPoints(FrontEnd.getInstance().getService(service).getEndPoints());
+		}
 		
-		NodeManagerServiceStub	nodeManager = null;
-		
-		/* System.out.println("\n[Analyser:97] Response time "  + service + " = " + dataPoint.getStatistics().getAverage()*0.000000001 + " s\n"
-							+ "              Throughput = " + dataPoint.getStatistics().getThroughput());
- */
-		if(dataPoint.getStatistics().getAverage() > this.rtHigherThreshold 
-				&& (System.currentTimeMillis() - this.getLastServiceAlert()) > 60000){
-			Set<EndPoint> otherNodes = FrontEnd.getInstance().getNodes();
-			System.out.println("\n[Analyser:102] Response time overload "  + service + " = " + dataPoint.getStatistics().getAverage()*0.000000001 + " s\n"
-								+ "                 Throughput = " + dataPoint.getStatistics().getThroughput());
-			if (Broker.getROLE().equals("frontend")){
-				EndPoint ep = new EndPoint(Network.recoverAddress("localhost"), Integer.parseInt((String)Broker.getSystemProps().getProperties().get("port_number")));
-				otherNodes.remove(ep);
+		//NodeManagerServiceStub nodeManager = null;
+
+		System.out.println("\n[Analyser:133]                 Is adaption?          " + this.isAfterAdaptation());
+		System.out.println("[Analyser:134]                 Response time         " + dataPoint.getStatistics().getAverage()*0.000001 + " ms");
+		System.out.println("[Analyser:135]                 Is a peak?            " + this.isPeak(this.lastDataPoints));
+		System.out.println("[Analyser:136]                 Last dataPoints size: " + this.lastDataPoints.size() + "\n");
+
+		if(this.isAfterAdaptation() && !this.isPaused()){
+			if(dataPoint.getStatistics().getAverage() > this.rtLowerThreshold && dataPoint.getStatistics().getAverage() < this.rtHigherThreshold){
+				this.setAfterAdaptation(false);
 			}
-			
-			analysis.setAlertMessage("response time overload");
-			analysis.setServiceAlert(true);
-			
-/* 			if(FrontEnd.getInstance().getService(service).hasReplicas()){
-				//Get system information from replica nodes
-				for(EndPoint e : analysis.getServiceEndPoints()){
-					nodeManager = (NodeManagerServiceStub) Broker.getNaming().lookup("NodeManagerService".toLowerCase() + '@' + e.getHost());
-					if(nodeManager != null){
-						nodeManager.setForwarded(false);
-						analysis.addReplicaSystemData(e.getHost(), nodeManager.getSystemData());
-					}
+			//System.out.println("[Analyser:142]: Wainting for adaptaion");
+		} else {
+			if(!this.isPeak(this.lastDataPoints) && !this.isAfterAdaptation()){ // && dataPoint.getStatistics().getAverage() > this.rtHigherThreshold){
+					
+				FrontEnd.getInstance().getReactionTime().setInitTime(System.currentTimeMillis());
+				
+				System.out.println("\n-----------------------------------------------------------------------");
+				System.out.println("[Analyser:136] Response time OVERLOAD "  + service + " = " + dataPoint.getStatistics().getAverage()*0.000001 + " ms"
+					+  "\n               Throughput = " + dataPoint.getStatistics().getThroughput() + " requests/s");
+				System.out.println("-----------------------------------------------------------------------\n");
+				Set<EndPoint> otherNodes = FrontEnd.getInstance().getNodes();
+					
+				if (Broker.getROLE().equals("frontend")){
+					EndPoint ep = new EndPoint(Network.recoverAddress("localhost"), Integer.parseInt((String)Broker.getSystemProps().getProperties().get("port_number")));
+					otherNodes.remove(ep);
 				}
-			} */
-			
-/* 			if(otherNodes != null && !otherNodes.isEmpty()){
-				for(EndPoint ep : otherNodes){
-					nodeManager = (NodeManagerServiceStub) Broker.getNaming().lookup("NodeManagerService".toLowerCase() + '@' + ep.getHost());
-					if(nodeManager != null){
-						nodeManager.setForwarded(false);
-						analysis.addAvailableNodesSystemData(ep.getHost(), nodeManager.getSystemData());
-					}
-				}
-			} */
-			
-			//analysis.setAvailableNodes(otherNodes);
-			this.setLastServiceAlert(System.currentTimeMillis());
-			
-		} else if(dataPoint.getStatistics().getAverage() < this.rtLowerThreshold
-					&& (System.currentTimeMillis() - this.getLastServiceAlert()) > 60000){
-			
-			System.out.println("\n[Analyser:149] Response time underload "  + service + " = " + dataPoint.getStatistics().getAverage()*0.000000001 + " s\n"
-							+ "                 Throughput = " + dataPoint.getStatistics().getThroughput());
+				
+				analysis.setAlertMessage("response time overload");
+				analysis.setServiceAlert(true);
+				analysis.setAvailableNodes(otherNodes);
+				
+				//analysis.setAvailableNodes(otherNodes);
+				this.setLastServiceAlert(System.currentTimeMillis());
 
-			Set<EndPoint> otherNodes = FrontEnd.getInstance().getNodes();
-			otherNodes.removeAll(analysis.getServiceEndPoints());
-			
-			if (Broker.getSystemProps().getProperties().get("role").equals("frontend")){
-				EndPoint ep = new EndPoint(Network.recoverAddress("localhost"), Integer.parseInt((String)Broker.getSystemProps().getProperties().get("port_number")));
-				otherNodes.remove(ep);
+				//this.setPaused(true);
+				this.setAfterAdaptation(true);
+				
+			} else if(!this.isValley(this.lastDataPoints) && !this.isAfterAdaptation() && dataPoint.getStatistics().getThroughput() > 20){
+					//&& dataPoint.getStatistics().getAverage() < this.rtLowerThreshold && dataPoint.getStatistics().getThroughput() > 20){
+				
+				FrontEnd.getInstance().getReactionTime().setInitTime(System.currentTimeMillis());
+				
+				System.out.println("\n-----------------------------------------------------------------------");
+				System.out.println("[Analyser:176] Response time UNDERLOAD "  + service + " = " + dataPoint.getStatistics().getAverage()*0.000001 + " ms"
+					+  "\n               Throughput = " + dataPoint.getStatistics().getThroughput() + " requests/s");
+				System.out.println("-----------------------------------------------------------------------\n");
+				
+				Set<EndPoint> otherNodes = FrontEnd.getInstance().getNodes();
+				otherNodes.removeAll(analysis.getServiceEndPoints());
+				
+				if (Broker.getSystemProps().getProperties().get("role").equals("frontend")){
+					EndPoint ep = new EndPoint(Network.recoverAddress("localhost"), Integer.parseInt((String)Broker.getSystemProps().getProperties().get("port_number")));
+					otherNodes.remove(ep);
+				}
+				
+				analysis.setAlertMessage("response time underload");
+				analysis.setServiceAlert(true);
+				analysis.setAvailableNodes(otherNodes);
+				
+				this.setLastServiceAlert(System.currentTimeMillis());
+				//this.setPaused(true);
+				this.setAfterAdaptation(true);
+
+			} else {
+				this.setPaused(false);
 			}
-
-			analysis.setAlertMessage("response time underload");
-			analysis.setServiceAlert(true);
-/* 			if(FrontEnd.getInstance().getService(service).hasReplicas()){
-				for(EndPoint ep : analysis.getServiceEndPoints()){
-					nodeManager = (NodeManagerServiceStub) Broker.getNaming().lookup("NodeManagerService".toLowerCase() + '@' + ep.getHost());
-					if(nodeManager != null){
-						nodeManager.setForwarded(false);
-						analysis.addReplicaSystemData(ep.getHost(), nodeManager.getSystemData());
-					}
-				}
-			} */
-
-			this.setLastServiceAlert(System.currentTimeMillis());
 		}
 		return analysis;
 	}
@@ -190,6 +215,46 @@ public class Analyser {
 		if (NodeManager.getInstance().isObjectMonitorEnabled())
 			analysis.setServicesMetering(NodeManager.getInstance().getObjectMonitor().getTimeSeries());
 		return analysis;
+	}
+
+	private boolean isPeak(Queue<InvokingDataPoint> queue){
+		Queue<InvokingDataPoint> q = new LinkedList<InvokingDataPoint>(queue);
+		boolean flag = false;
+		if(q.size() == 3){
+			while(!q.isEmpty()){
+				if(q.poll().getStatistics().getAverage() <= this.rtHigherThreshold){
+					flag = true;
+					break;
+				}
+			}
+			
+			if(flag)
+				return true;
+			else
+				return false;
+		} else{
+			return true;
+		}
+	}
+
+	private boolean isValley(Queue<InvokingDataPoint> queue){
+		Queue<InvokingDataPoint> q = new LinkedList<InvokingDataPoint>(queue);
+		boolean flag = false;
+		if(q.size() == 3){
+			while(!q.isEmpty()){
+				if(q.poll().getStatistics().getAverage() >= this.rtLowerThreshold){
+					flag = true;
+					break;
+				}
+			}
+			
+			if(flag)
+				return true;
+			else
+				return false;
+		} else{
+			return true;
+		}
 	}
 }
 	

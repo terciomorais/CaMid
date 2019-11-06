@@ -39,23 +39,23 @@ public class Naming implements INaming {
 		if(!this.repository.containsKey(serviceName))
 			this.repository.put(serviceName, namingRecord);
 		this.repository.get(serviceName).addRemoteEndPoint(namingRecord.getStub().getEndpoint());
-		System.out.println("-------------------------------------");
+/* 		System.out.println("-------------------------------------");
 		System.out.println("| [Naming] registering service: " + serviceName);
 		System.out.println("|         " + this.repository.get(serviceName).getEndPoints().size() + " instances");
 		for(EndPoint endpoint : this.repository.get(serviceName).getEndPoints())
 			System.out.println("|         endpoint: " + endpoint.getEndpoint());
-		System.out.println("-------------------------------------");
+		System.out.println("-------------------------------------"); */
 	}
 	
 	private void removeEndPoint(String serviceName, EndPoint endpoint){
 		if(this.repository.containsKey(serviceName)){
 			this.repository.get(serviceName).removeRemoteEndPoint(endpoint.getEndpoint());
-			System.out.println("\n-------------------------------------");
+/* 			System.out.println("\n-------------------------------------");
 			System.out.println("| [Naming] removing endpoint of the service: " + serviceName);
 			System.out.println("|         " + this.repository.get(serviceName).getEndPoints().size() + " instances");
 			for(EndPoint ep : this.repository.get(serviceName).getEndPoints())
 				System.out.println("|         endpoint: " + ep.getEndpoint());
-			System.out.println("-------------------------------------\n");
+			System.out.println("-------------------------------------\n"); */
 
 		}
 	}
@@ -79,16 +79,17 @@ public class Naming implements INaming {
 		if (!(serviceName.equals("management") || serviceName.equals("forward"))
 					&& this.isFrontEndEnabled
 					&& Network.isReachable(this.feHost, 1000)){
-			if(this.domainManager == null)
+			if(this.domainManager == null){
 				this.domainManager = (CloudManagerServiceStub) this.lookup("management");
 				this.domainManager.setForwarded(false);
+			}
 
-			if(this.repository.containsKey(serviceName) && this.repository.get(serviceName).hasReplicas()) {
+			if(this.repository.containsKey(serviceName) && endpoint != null && this.repository.get(serviceName).hasReplicas()) {
 				this.removeEndPoint(serviceName, endpoint);
 				DispatcherThread dispatcher = new DispatcherThread(this.domainManager, serviceName, this.repository, "removeEndPoint", endpoint);
 				Broker.getExecutorInstance().execute(dispatcher);
 	
-			} else if(!this.repository.get(serviceName).hasReplicas()){
+			} else if(this.repository.containsKey(serviceName) && !this.repository.get(serviceName).hasReplicas()){
 				this.repository.remove(serviceName);
 				DispatcherThread dispatcher = new DispatcherThread(this.domainManager, serviceName, this.repository, "removeService", null);
 				Broker.getExecutorInstance().execute(dispatcher);

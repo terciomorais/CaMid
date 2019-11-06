@@ -6,8 +6,8 @@ import br.ufpe.cin.in1118.management.monitoring.SystemDataPoint;
 
 public class NodeManagerTester {
     public static void main(String[] args){
-        NamingStub				naming		= new NamingStub("10.66.66.10", 1111);
-        NodeManagerServiceStub	nodeManager = (NodeManagerServiceStub) naming.lookup("NodeManagerService".toLowerCase() + "@10.66.66.11");
+        NamingStub				naming		= new NamingStub("10.66.67.10", 1111);
+        NodeManagerServiceStub	nodeManager = (NodeManagerServiceStub) naming.lookup("NodeManagerService".toLowerCase() + "@10.66.67.11");
         nodeManager.setForwarded(false);
         SystemDataPoint         sdp         = nodeManager.getSystemData();
         

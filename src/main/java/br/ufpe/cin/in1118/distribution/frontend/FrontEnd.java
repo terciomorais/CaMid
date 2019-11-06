@@ -11,25 +11,28 @@ import br.ufpe.cin.in1118.distribution.stub.NamingStub;
 import br.ufpe.cin.in1118.distribution.stub.Stub;
 import br.ufpe.cin.in1118.management.Adaptor;
 import br.ufpe.cin.in1118.management.analysing.Analysis;
+import br.ufpe.cin.in1118.management.node.NodeManager;
 import br.ufpe.cin.in1118.services.commons.naming.LocalServiceRegistry;
 import br.ufpe.cin.in1118.services.commons.naming.NameRecord;
 import br.ufpe.cin.in1118.utils.EndPoint;
 import br.ufpe.cin.in1118.utils.Network;
 import br.ufpe.cin.in1118.utils.PropertiesSetup;
+import br.ufpe.cin.in1118.utils.Timer;
 
 public class FrontEnd {
 
-	private static FrontEnd			INSTANCE	= null;
-	private Broker 					broker		= null;
-	private PropertiesSetup			properties	= new PropertiesSetup("config/frontend.config");
-	private String					host		= Network.recoverAddress("localhost");
-	private int						port		= 1212;
-	private EndPoint				endpoint	= null;
-	private Map<String, NameRecord>	serviceList	= null;
-	private Set<EndPoint>			nodes		= null;
-	private Set<EndPoint>			clouds		= null;
-	private int						maxNodes	= 0;
-	private Adaptor					adaptor		= null;
+	private static FrontEnd			INSTANCE		= null;
+	private Broker 					broker			= null;
+	private PropertiesSetup			properties		= new PropertiesSetup("config/frontend.config");
+	private String					host			= Network.recoverAddress("localhost");
+	private int						port			= 1212;
+	private EndPoint				endpoint		= null;
+	private Map<String, NameRecord>	serviceList		= null;
+	private Set<EndPoint>			nodes			= null;
+	private Set<EndPoint>			clouds			= null;
+	private int						maxNodes		= 0;
+	private Adaptor					adaptor			= null;
+	private Timer					reactionTime	= null;
 
 	private LocalServiceRegistry	registry	= LocalServiceRegistry.getINSTANCE("config/remote_front.properties");
 	
@@ -96,17 +99,36 @@ public class FrontEnd {
 		System.out.println("--------------------------------------\n");
 
 		this.addAllNodes(record.getEndPoints());
+
+		if(NodeManager.getInstance().getObjectAnalyser().isPaused() || NodeManager.getInstance().getObjectAnalyser().isAfterAdaptation()){
+			//Calculating reaction time for VM level elasticity
+			FrontEnd.getInstance().getReactionTime().setEndTime(System.currentTimeMillis());
+			System.out.println("\n-----------------------------------------------------------------------------");
+			System.out.println("[FrontEnd:107] Reaction time for application level elasticity: " + FrontEnd.getInstance().getReactionTime().getElapsedTime());
+			System.out.println("-------------------------------------------------------------------------------\n");
+			NodeManager.getInstance().getObjectAnalyser().setPaused(false);
+		}
 	}
 	
 	public void removeService(String service){
 		this.serviceList.remove(service);
-		System.out.println("\n--------------------------------------\n  [FrontEnd:103] Service list updated:");
+		System.out.println("\n--------------------------------------\n  [FrontEnd:114] Service list updated:");
 		for(Map.Entry<String, NameRecord> rec: this.serviceList.entrySet()){
-			System.out.println("[Frontend:105] service " + rec.getValue().getStub().getServiceName());
+			System.out.println("[Frontend:120] service " + rec.getValue().getStub().getServiceName());
 			for(EndPoint ep : rec.getValue().getEndPoints())
 				System.out.println("            endpoint " + ep.getEndpoint());
 		}
 		System.out.println("--------------------------------------\n");
+
+		if(NodeManager.getInstance().getObjectAnalyser() != null && (NodeManager.getInstance().getObjectAnalyser().isPaused()
+				|| NodeManager.getInstance().getObjectAnalyser().isAfterAdaptation())){
+			//Calculating reaction time for VM level elasticity
+			FrontEnd.getInstance().getReactionTime().setEndTime(System.currentTimeMillis());
+			System.out.println("\n-----------------------------------------------------------------------------");
+			System.out.println("[FrontEnd:128] Reaction time for application level elasticity: " + FrontEnd.getInstance().getReactionTime().getElapsedTime());
+			System.out.println("-------------------------------------------------------------------------------\n");
+			NodeManager.getInstance().getObjectAnalyser().setPaused(false);
+		}
 	}
 
 	public void updateServices(){
@@ -121,7 +143,7 @@ public class FrontEnd {
 			e.printStackTrace();
 		}
 		System.out.println("\n ------------------------------------------------------------------------------");
-		System.out.println("| [FrontEnd:120] Service list is DONE:");
+		System.out.println("| [FrontEnd:135] Service list is DONE:");
 		for(Map.Entry<String, NameRecord> record : this.serviceList.entrySet()){
 
 			System.out.println("                service " + record.getValue().getStub().getServiceName());
@@ -129,6 +151,15 @@ public class FrontEnd {
 				System.out.println("                      endpoint " + ep.getEndpoint());
 		}
 		System.out.println(" ------------------------------------------------------------------------------\n");
+		
+/* 		if(NodeManager.getInstance() != null && NodeManager.getInstance().getObjectAnalyser() != null && NodeManager.getInstance().getObjectAnalyser().isPaused()){
+			//Calculating reaction time for VM level elasticity
+			FrontEnd.getInstance().getReactionTime().getEndTime();
+			System.out.println("\n-----------------------------------------------------------------------------");
+			System.out.println("[FrontEnd:161] Reaction time for application level elasticity: " + FrontEnd.getInstance().getReactionTime());
+			System.out.println("-------------------------------------------------------------------------------\n");
+			NodeManager.getInstance().getObjectAnalyser().setPaused(false);
+		} */
 	}
 
 	public void addAllNodes(Set<EndPoint> endpoints){
@@ -206,6 +237,16 @@ public class FrontEnd {
 
 	public void setAdaptor(Adaptor adaptor) {
 		this.adaptor = adaptor;
+	}
+
+	public Timer getReactionTime() {
+		if(this.reactionTime == null)
+			this.reactionTime = new Timer();
+		return this.reactionTime;
+	}
+
+	public void setReactionTime(Timer reactionTime) {
+		this.reactionTime = reactionTime;
 	}
 
 	public void start(){

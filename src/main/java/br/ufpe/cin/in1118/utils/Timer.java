@@ -1,8 +1,13 @@
 package br.ufpe.cin.in1118.utils;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 public class Timer {
 	private long initTime	= 0;
 	private long endTime	= 0;
+
 	
 	public Timer(){}
 	
@@ -24,9 +29,15 @@ public class Timer {
 	}
 	
 	public long getElapsedTime(){
-		if (initTime == 0)
-			return 0;
+		if (endTime < initTime || initTime == 0)
+			return -1;
 		else
 			return endTime - initTime;
+	}
+
+	public void printTime(){
+			Date d = GregorianCalendar.getInstance().getTime();
+			SimpleDateFormat format = new SimpleDateFormat();
+			System.out.println(format.format(d));	
 	}
 }

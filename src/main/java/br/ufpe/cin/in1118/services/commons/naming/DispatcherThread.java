@@ -13,11 +13,11 @@ public class DispatcherThread implements Runnable {
 	private EndPoint				endpoint		= null;
 	
 	public DispatcherThread(CloudManagerServiceStub domainManager, String serviceName, Map<String, NameRecord> repository, String operation, EndPoint endpoint){
-		this.cloudManager = domainManager;
-		this.serviceName = serviceName;
-		this.repository = repository;
-		this.operation = operation;
-		this.endpoint = endpoint;
+		this.cloudManager	= domainManager;
+		this.serviceName	= serviceName;
+		this.repository		= repository;
+		this.operation		= operation;
+		this.endpoint		= endpoint;
 	}
 
 	@Override

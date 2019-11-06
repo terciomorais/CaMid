@@ -1,7 +1,6 @@
 package br.ufpe.cin.in1118.management.monitoring;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,9 +102,15 @@ public class DataPoint implements Serializable{
 	}
 
 	public double getThroughput(){
-		if((this.getEndTimeStamp() - this.getBeginTimeStamp())*0.000000000001 != 0)
-			return this.getSuccessCount()/(this.getEndTimeStamp() - this.getBeginTimeStamp())*0.000000000001;
-		else
+/* 		System.out.println("[DataPoint:105] Throughput calculus");
+		System.out.println("[DataPoint:106]     first timestamp     " + this.getBeginTimeStamp());
+		System.out.println("[DataPoint:107]     last timestamp      " + this.getEndTimeStamp());
+		System.out.println("[DataPoint:107]     time                " + (this.getEndTimeStamp() - this.getBeginTimeStamp())/1000.0);
+		System.out.println("[DataPoint:108]     success invocations " + this.getSuccessCount()); */
+		if((this.getEndTimeStamp() - this.getBeginTimeStamp()) > 0){
+			double time = (double)(this.getEndTimeStamp() - this.getBeginTimeStamp())/1000.0;
+			return this.getSuccessCount()/time;
+		} else
 			return -1;
 	}
 

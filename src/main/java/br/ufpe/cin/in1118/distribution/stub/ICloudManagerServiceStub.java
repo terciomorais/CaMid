@@ -10,6 +10,7 @@ import br.ufpe.cin.in1118.utils.EndPoint;
 public interface ICloudManagerServiceStub {
 
     public void alert(Analysis analysis);
+    public boolean serviceIsUp(String service);
     public void addService(String service, NameRecord record);
     public void removeService(String service);
     public void removeServiceEndpoint(String service, EndPoint endpoint);

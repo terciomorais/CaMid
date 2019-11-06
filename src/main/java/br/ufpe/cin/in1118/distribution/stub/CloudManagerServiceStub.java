@@ -13,6 +13,16 @@ public class CloudManagerServiceStub extends Stub implements ICloudManagerServic
   private static final long serialVersionUID = 1L;
 
   @Override
+  public boolean serviceIsUp(String service) {
+		class Local {};
+    Class<?> clazz = Local.class;
+    Serializable[] paramValues = {service};
+		super.prepare(clazz, paramValues);
+		this.request();
+		return (boolean) this.reply.getResponse();
+  }
+
+  @Override
   public void alert(Analysis analysis) {
     class Local {};
     Class<?> clazz = Local.class;
@@ -61,8 +71,9 @@ public class CloudManagerServiceStub extends Stub implements ICloudManagerServic
   @Override
   public boolean allocateResource(Analysis analysis) {
 		class Local {};
-		Class<?> clazz = Local.class;
-		super.prepare(clazz, new Serializable[0]);
+    Class<?> clazz = Local.class;
+    Serializable[] paramValues = {analysis};
+		super.prepare(clazz, paramValues);
 		this.request();
 		return (boolean) this.reply.getResponse();
   }

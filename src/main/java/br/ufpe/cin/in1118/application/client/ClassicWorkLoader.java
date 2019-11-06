@@ -20,11 +20,9 @@ public class ClassicWorkLoader {
 		int		ini_thread		= Integer.parseInt(args[3]);
 		int		end_thread		= Integer.parseInt(args[4]);
 		int		step			= Integer.parseInt(args[5]);
-		int		experimentTime	= Integer.parseInt(args[6]);
-		String	scenario		= args[7];
-		int 	interval		= Integer.parseInt(args[8]);
-
-		System.out.println("ClassicWorkLoader:27] " + args[8]);
+		int 	interval		= Integer.parseInt(args[6]);
+		int		experimentTime	= Integer.parseInt(args[7]);
+		String	scenario		= args[8];
 
 		int		requestCount	= 0;
 		long	sum				= 0L;
@@ -102,7 +100,7 @@ public class ClassicWorkLoader {
 						sum			+= SenderRunner.elapsedTimes.get(l).getElapsedTime();
 						squareSum	+= SenderRunner.elapsedTimes.get(l).getElapsedTime() * SenderRunner.elapsedTimes.get(l).getElapsedTime();
 					} else{
-						SenderRunner.success.incrementAndGet();
+						SenderRunner.success.decrementAndGet();
 						SenderRunner.fails.incrementAndGet();
 					}
 				}
@@ -111,7 +109,7 @@ public class ClassicWorkLoader {
 			}
 
 			BufferedWriter bw = null;
-			File log = new File("logs/" + scenario + "-Log" + "-" + serviceTime + "ms-" + ini_thread + "-" + end_thread + "-" + serviceTime + ".csv");
+			File log = new File("logs/" + scenario + "-Overhead" + "-" + serviceTime + "ms-" + ini_thread + "-" + end_thread + "-" + serviceTime + ".csv");
 			if (!log.exists())
 				try {
 					log.createNewFile();
