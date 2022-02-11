@@ -130,10 +130,10 @@ public class Analyser {
 		
 		//NodeManagerServiceStub nodeManager = null;
 
-		System.out.println("\n[Analyser:133]                 Is adaption?          " + this.isAfterAdaptation());
-		System.out.println("[Analyser:134]                 Response time         " + dataPoint.getStatistics().getAverage()*0.000001 + " ms");
-		System.out.println("[Analyser:135]                 Is a peak?            " + this.isPeak(this.lastDataPoints));
-		System.out.println("[Analyser:136]                 Last dataPoints size: " + this.lastDataPoints.size() + "\n");
+		// System.out.println("\n[Analyser:133]                 Is adaption?          " + this.isAfterAdaptation());
+		// System.out.println("[Analyser:134]                 Response time         " + dataPoint.getStatistics().getAverage()*0.000001 + " ms");
+		// System.out.println("[Analyser:135]                 Is a peak?            " + this.isPeak(this.lastDataPoints));
+		// System.out.println("[Analyser:136]                 Last dataPoints size: " + this.lastDataPoints.size() + "\n");
 
 		if(this.isAfterAdaptation() && !this.isPaused()){
 			if(dataPoint.getStatistics().getAverage() > this.rtLowerThreshold && dataPoint.getStatistics().getAverage() < this.rtHigherThreshold){

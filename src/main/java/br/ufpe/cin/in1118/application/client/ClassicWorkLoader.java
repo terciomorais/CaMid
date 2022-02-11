@@ -14,37 +14,34 @@ public class ClassicWorkLoader {
 
 	public static void main(String[] args) {
 
-		String 	host			= args[0];
-		int		port			= Integer.parseInt(args[1]);	
-		int		serviceTime		= Integer.parseInt(args[2]);
-		int		ini_thread		= Integer.parseInt(args[3]);
-		int		end_thread		= Integer.parseInt(args[4]);
-		int		step			= Integer.parseInt(args[5]);
-		int 	interval		= Integer.parseInt(args[6]);
-		int		experimentTime	= Integer.parseInt(args[7]);
-		String	scenario		= args[8];
-
-		int		requestCount	= 0;
-		long	sum				= 0L;
-		double	average			= 0;
+		String	host						= args[0];
+		int			port						= Integer.parseInt(args[1]);	
+		int			serviceTime			= Integer.parseInt(args[2]);
+		int			ini_thread			= Integer.parseInt(args[3]);
+		int			end_thread			= Integer.parseInt(args[4]);
+		int			step						= Integer.parseInt(args[5]);
+		int 		interval				= Integer.parseInt(args[6]);
+		int			experimentTime	= Integer.parseInt(args[7]);
+		String	scenario				= args[8];
+		int			requestCount	= 0;
+		long		sum						= 0L;
+		double	average				= 0;
 		double	stdDeviation	= 0;
-		long	squareSum		= 0L;
-		long	maxValue		= 0L;
-		long	minValue		= 0L;
-		long 	totalTime		= 0L;
+		long		squareSum			= 0L;
+		long		maxValue			= 0L;
+		long		minValue			= 0L;
+		long 		totalTime			= 0L;
 
 		System.out.println("\n -----------------------------------------------------------");
 		System.out.println("|      Begining of all experiment service time " + serviceTime + " ms       |");
 		System.out.println(" -----------------------------------------------------------");
 
 		NamingStub	naming	= new NamingStub(host, port);
-		DelayStub	delay	= (DelayStub) naming.lookup("delay");
+		DelayStub		delay		= (DelayStub) naming.lookup("delay");
 
 		//ramp up
 		for(int i = 0; i < 300; i++){
-			//long b = System.currentTimeMillis();
 			delay.delay(10);
-			//System.out.println("[ClassicWorkLoader:49] " + (System.currentTimeMillis() - b) + "ms");
 		}
 
 		for(int tax = ini_thread; tax <= end_thread; tax += step){
@@ -55,19 +52,21 @@ public class ClassicWorkLoader {
 			SenderRunner.success.set(0);
 
 			requestCount	= 0;
-			sum				= 0L;
-			average			= 0;
+			sum						= 0L;
+			average				= 0;
 			stdDeviation	= 0;
-			squareSum		= 0L;
-			maxValue		= 0L;
-			minValue		= 0L;
-			totalTime		= 0L;
+			squareSum			= 0L;
+			maxValue			= 0L;
+			minValue			= 0L;
+			totalTime			= 0L;
 			ExecutorService	es	= Executors.newFixedThreadPool(tax);
+			//experimentTime = experimentTime/tax;
+			//System.out.println("Replication time " + experimentTime/tax);
 
 			long begin	= System.currentTimeMillis();
+			
 			for(int i = 0; i < tax; i++)
 				es.execute(new SenderRunner(delay, serviceTime, experimentTime, interval));
-
 			//finalizing threads
 			es.shutdown();
 			try {
@@ -77,15 +76,25 @@ public class ClassicWorkLoader {
 			}
 			totalTime += System.currentTimeMillis() - begin;
 
-			//	System.out.println(" Starting statistic computation\n");
-			//Statistic process
+//	System.out.println(" Starting statistic computation\n");
+//Statistic process
 			if(SenderRunner.success.get() > 0){
 				maxValue = minValue = SenderRunner.elapsedTimes.get(0).getElapsedTime();
 				requestCount = SenderRunner.elapsedTimes.size();
-				/*
-			int count = 0;
-			while (count < requestCount && minValue == -1)
-				minValue = SenderRunner.elapsedTimes.get(++count);*/
+				
+			//saving raw data
+				BufferedWriter bwRawData = null;
+				File logRawData = new File("logs/raw_data-" + scenario + "-overhead" + "-" + serviceTime + "ms-" + tax + "_users-" + serviceTime + ".csv");
+				if (!logRawData.exists())
+				try {
+					logRawData.createNewFile();
+					bwRawData = new BufferedWriter(new FileWriter(logRawData,true));
+					bwRawData.write("time_stamp;elapsed_time");
+					bwRawData.newLine();
+					bwRawData.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 
 				for(int l = 0; l < requestCount; l++){
 
@@ -103,11 +112,27 @@ public class ClassicWorkLoader {
 						SenderRunner.success.decrementAndGet();
 						SenderRunner.fails.incrementAndGet();
 					}
+				//feeding raw data file
+					try{
+						bwRawData = new BufferedWriter(new FileWriter(logRawData,true));
+						bwRawData.write(SenderRunner.elapsedTimes.get(l).getTimeStamp()	+ ";" + SenderRunner.elapsedTimes.get(l).getElapsedTime());
+						bwRawData.newLine();
+						bwRawData.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}				
+				try {
+					bwRawData.close();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
+
 				average = (double)sum/(double)SenderRunner.success.get();
 				stdDeviation = Math.sqrt(((double)squareSum - ((double)sum * sum /SenderRunner.success.get()))/((double)SenderRunner.success.get() - 1));
 			}
 
+//Saving statistics
 			BufferedWriter bw = null;
 			File log = new File("logs/" + scenario + "-Overhead" + "-" + serviceTime + "ms-" + ini_thread + "-" + end_thread + "-" + serviceTime + ".csv");
 			if (!log.exists())
@@ -138,19 +163,22 @@ public class ClassicWorkLoader {
 
 				bw.newLine();
 				bw.close();
-				System.out.println(" --------------------   RESULTS   --------------------");
-				System.out.println("|   Response time average: " + average + " ms");
-				System.out.println("|   Standard deviation: " + stdDeviation);
-				System.out.println("|   Standard deviation percentage: " + stdDeviation/average*100 + " %");
-				System.out.println("|   Throughput: " + (SenderRunner.success.get()*1000)/(double)totalTime + " request per second");
-				System.out.println("|   Total successes: " + SenderRunner.success);
-				System.out.println("|   Total fails: " + SenderRunner.fails);
-				System.out.println("|   Fail tax: " + SenderRunner.fails.get()/(double)requestCount*100 + " %");
-				System.out.println(" -----------------------------------------------------");
-
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
+			//Printing results
+			System.out.println(" --------------------   RESULTS   --------------------");
+			System.out.println("|   Response time average: " + average + " ms");
+			System.out.println("|   Standard deviation: " + stdDeviation);
+			System.out.println("|   Standard deviation percentage: " + stdDeviation/average*100 + " %");
+			System.out.println("|   Throughput: " + (SenderRunner.success.get()*1000)/(double)totalTime + " request per second");
+			System.out.println("|   Total successes: " + SenderRunner.success);
+			System.out.println("|   Total fails: " + SenderRunner.fails);
+			System.out.println("|   Fail tax: " + SenderRunner.fails.get()/(double)requestCount*100 + " %");
+			System.out.println(" -----------------------------------------------------");
+
+
 			Thread.currentThread();
 			try {
 				Thread.sleep(3000);

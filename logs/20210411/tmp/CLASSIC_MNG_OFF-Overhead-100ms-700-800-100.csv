@@ -1,0 +1,2 @@
+simultaneous users;total_time;total_invocations;success;failed;response time average (ms);standard_deviation;percent;throughput;fail_tax;hi_value;low_value
+700;445425;70000;70000;0;4279.871842857143;1120.704636927688;26.185471857015504;157.153280574732;0.0;13004;104

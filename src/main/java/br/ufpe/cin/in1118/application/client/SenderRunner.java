@@ -16,48 +16,48 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 	public static AtomicInteger	fails;
 	public static AtomicInteger	success;
 	public static AtomicInteger	systemFails;
-	public static List<Event>	elapsedTimes	= null;
-	private int 				serviceTime		= 1;
-	private DelayStub			delay			= null;
-	private int 				sleep			= 100;			
-	public static int 			threadCount;
-	private boolean				isByTax			= false;
-	private int					times			= 0;
+	public static List<Event>		elapsedTimes	= null;
+	private int 								serviceTime		= 1;
+	private DelayStub						delay					= null;
+	private int 								sleep					= 100;			
+	public static int 					threadCount;
+	private boolean							isByTax				= false;
+	private int									times					= 0;
 
 	public SenderRunner(DelayStub delay, int serviceTime) {
-		this.serviceTime			= serviceTime;
-		this.delay					= delay;		
+		this.serviceTime	= serviceTime;
+		this.delay				= delay;		
 		SenderRunner.createMetricList();
 	}
 
 	public SenderRunner(int reqTax, int serviceTime, int time, String host, int port){
-		this.serviceTime			= serviceTime;
-		NamingStub naming			= new NamingStub(host, port);
-		this.delay					= (DelayStub) naming.lookup("delay");
-		this.sleep					= 1000/reqTax;
-		this.times					= time;
-		this.serviceTime			= serviceTime;
+		this.serviceTime	= serviceTime;
+		NamingStub naming	= new NamingStub(host, port);
+		this.delay				= (DelayStub) naming.lookup("delay");
+		this.sleep				= 1000/reqTax;
+		this.times				= time;
+		this.serviceTime	= serviceTime;
+		this.isByTax			= true;
 		SenderRunner.createMetricList();
-		this.isByTax = true;
 	}
 
 	public SenderRunner(DelayStub delay, int serviceTime, int experimentTime, int interval, boolean isByTax) {
-		this.serviceTime			= serviceTime;
-		this.delay					= delay;
-		this.times					= experimentTime;
-		this.serviceTime			= serviceTime;
-		this.isByTax 				= isByTax;
-		this.sleep					= interval;
+		this.serviceTime	= serviceTime;
+		this.delay				= delay;
+		this.times				= experimentTime;
+		this.serviceTime	= serviceTime;
+		this.isByTax 			= isByTax;
+		this.sleep				= interval;
 		SenderRunner.createMetricList();	
 	}
 
 	public SenderRunner(DelayStub delay, int serviceTime, int experimentTime, int interval) {
-		this.serviceTime			= serviceTime;
-		this.delay					= delay;
-		this.times					= experimentTime;
-		this.serviceTime			= serviceTime;
-		this.isByTax 				= true;
-		this.sleep					= interval;
+		this.serviceTime	= serviceTime;
+		this.delay				= delay;
+		this.times				= experimentTime;
+		this.serviceTime	= serviceTime;
+		this.isByTax 			= true;
+		this.sleep				= interval;
 		SenderRunner.createMetricList();	
 	}
 
@@ -98,10 +98,10 @@ public class SenderRunner implements Runnable{ // implements Runnable {
 	} */
 
 	private void invoke(int sleep){
-		int factor = 1 + (20 * sleep)/100;
-		Random randon = new Random();
+		Random gauss = new Random();
+		long interval = (long)(sleep + (2*sleep * gauss.nextGaussian() * 0.1));
 		try {
-			Thread.sleep(sleep + factor - randon.nextInt(factor*2));
+			Thread.sleep(interval);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}		

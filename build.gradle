@@ -87,7 +87,7 @@ remotes {
   client {
     host      = '10.66.67.6'
     user      = 'root'
-    identity  = file('./auth/id_rsa-cloud00')
+    identity  = file('./auth/id_rsa-cloud01')
   }
 }
 
@@ -107,11 +107,11 @@ task testSSH {
   doLast {
     ssh.run {
       session(remotes.c01_node01){
-
       }
     }
   }
 }
+
 task fullDeployCloud {
   dependsOn ':fatJar'
   doLast {
@@ -249,6 +249,18 @@ task deployCloud{
         put from: file('build/libs/exercicio04RemotePatterns.jar'), into:'/root/'
         execute 'chmod 755 /root/exercicio04RemotePatterns.jar'
       }      
+      session(remotes.client){
+        put from: file('build/libs/exercicio04RemotePatterns.jar'), into:'/root/'
+        execute 'chmod 755 /root/exercicio04RemotePatterns.jar'
+      }
+    }
+  }
+}
+
+task deployClient{
+  dependsOn ':fatJar'
+  doLast {
+    ssh.run {      
       session(remotes.client){
         put from: file('build/libs/exercicio04RemotePatterns.jar'), into:'/root/'
         execute 'chmod 755 /root/exercicio04RemotePatterns.jar'
