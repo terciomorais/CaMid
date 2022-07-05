@@ -5,6 +5,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
+import java.net.NoRouteToHostException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
@@ -29,6 +31,14 @@ public class ClientSender implements Callable<Message> {
 		this.port = port;
 	}
 
+	public String getHost() {
+		return this.host;
+	}
+
+	public int getPort() {
+		return this.port;
+	}
+
 	@Override
 	public Message call() {
 		try {
@@ -38,19 +48,30 @@ public class ClientSender implements Callable<Message> {
 			this.oos.flush();
 		} catch (UnknownHostException e) {
 			System.err.println("[ClientSender:42] Error: Unknown Host Exception (message no. "
-					+ this.receivedMessage.getUniqueID()+ ") "
-					+ e.getMessage());
+					+ this.receivedMessage.getUniqueID() + ") " + e.getMessage());
 			this.receivedMessage = new Message();
 			this.receivedMessage.setStatus(Message.ResponseStatus.SENDING_EXCEPTION);
 			this.receivedMessage.setStatusMessage("Remote host not found by ClientSender");
 			return this.receivedMessage;
 		} catch (IOException e) {
-			System.err.println("[ClientSender:48] Error during sending: I/O Exception host "
-					+ this.host + " (message no. " + e.getMessage() + ")");
-			e.printStackTrace();
+			System.err.println("[ClientSender:48] Error during sending: I/O Exception host " + this.host
+					+ " (message no. " + e.getMessage() + ")");
+			//e.printStackTrace();
 			this.receivedMessage = new Message();
 			this.receivedMessage.setStatus(Message.ResponseStatus.SENDING_EXCEPTION);
-			this.receivedMessage.setStatusMessage("I/O error on ClientSender");
+			if (e.getMessage().contains("No route to host")){
+				this.receivedMessage.setStatusMessage("No route to target host from ClientSender");
+				System.err.println("[ClientSender:48] Error during sending: No route to target host from ClientSender " + this.host
+					+ " (message no. " + e.getMessage() + ")");
+			} else if(e.getMessage().contains("Connection refused")){
+				this.receivedMessage.setStatusMessage("Connection to target host refused");
+				System.err.println("[ClientSender:48] Error during sending: Connection to target host refused " + this.host
+					+ " (message no. " + e.getMessage() + ")");
+			} else {
+				this.receivedMessage.setStatusMessage("I/O error on ClientSender");
+				System.err.println("[ClientSender:48] Error during sending: I/O Exception host " + this.host
+					+ " (message no. " + e.getMessage() + ")");
+			}
 			return this.receivedMessage;
 		}
 		
@@ -72,7 +93,7 @@ public class ClientSender implements Callable<Message> {
 			this.receivedMessage = new Message();
 			this.receivedMessage.setStatus(Message.ResponseStatus.RECEPTION_EXCEPTION);
 			this.receivedMessage.setStatusMessage("Class not found by ClientSender");
-						return this.receivedMessage;
+			return this.receivedMessage;
 		} finally {
 			try{
 				if(this.ois != null)

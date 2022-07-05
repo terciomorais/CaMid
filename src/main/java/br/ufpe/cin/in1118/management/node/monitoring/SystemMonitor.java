@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -103,8 +104,8 @@ public class SystemMonitor implements Runnable{
 	}
 
 	private void sendAlert(Analysis analysis){
-		ClientCloudManager cdm = new ClientCloudManager(analysis);
-		Broker.getExecutorInstance().execute(cdm);
+		ClientCloudManager cdm = new ClientCloudManager();
+		cdm.sendAlert(analysis);
 	}
 	
 	@Override
@@ -127,8 +128,9 @@ public class SystemMonitor implements Runnable{
 				if(this.timeSeries.isEmpty())
 					this.timeSeries.add(new SystemDataPoint(new ArrayList<SystemData>(SystemAgent.getSystemDataList())));
 				else if (this.timeSeries.get(this.timeSeries.size() - 1).getSystemDataList().size() < 100){
-					for(SystemData sd : SystemAgent.getSystemDataList())
-					this.timeSeries.get(this.timeSeries.size() - 1).getSystemDataList().add(sd);
+					for(Iterator<SystemData> sd = SystemAgent.getSystemDataList().iterator(); sd.hasNext();)
+						this.timeSeries.get(this.timeSeries.size() - 1).getSystemDataList().add(sd.next());
+						
 				} else {
 					this.timeSeries.get(this.timeSeries.size() - 1).setDataPoint();
 					this.timeSeries.add(new SystemDataPoint(new ArrayList<SystemData>(SystemAgent.getSystemDataList())));

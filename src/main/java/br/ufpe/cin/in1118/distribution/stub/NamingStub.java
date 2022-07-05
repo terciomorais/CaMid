@@ -6,13 +6,14 @@ import java.util.Map;
 
 import br.ufpe.cin.in1118.services.commons.naming.INaming;
 import br.ufpe.cin.in1118.services.commons.naming.NameRecord;
+import br.ufpe.cin.in1118.utils.EndPoint;
 
 public class NamingStub extends Stub implements INaming {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private final String className = "br.ufpe.cin.in1118.services.commons.naming.Naming";
-			
+
 	public NamingStub(String host, int port) {
 		super();
 		this.setHost(host);
@@ -20,20 +21,20 @@ public class NamingStub extends Stub implements INaming {
 	}
 
 	@Override
-	public void bind(String serviceName, Stub stub){
+	public void bind(String serviceName, Stub stub) {
 		class Local {};
 		Class<?> clazz = Local.class;
-		Serializable[] paramValues = {serviceName, stub}; 		
+		Serializable[] paramValues = { serviceName, stub };
 		this.prepare(clazz, paramValues);
 		this.getInvocation().setRemoteClassName(this.className);
 		this.reply = this.request();
 	}
 
 	@Override
-	public Stub lookup(String serviceName){
+	public Stub lookup(String serviceName) {
 		class Local {};
 		Class<?> clazz = Local.class;
-		Serializable[] paramValues = {serviceName};
+		Serializable[] paramValues = { serviceName };
 		this.prepare(clazz, paramValues);
 		this.getInvocation().setRemoteClassName(this.className);
 		this.reply = this.request();
@@ -42,7 +43,7 @@ public class NamingStub extends Stub implements INaming {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ArrayList<NameRecord> listRecords(){
+	public ArrayList<NameRecord> listRecords() {
 		class Local {};
 		Class<?> clazz = Local.class;
 		Serializable[] paramValues = new Serializable[0];
@@ -74,5 +75,25 @@ public class NamingStub extends Stub implements INaming {
 		this.getInvocation().setRemoteClassName(this.className);
 		this.reply = this.request();
 		return (Map<String, NameRecord>) this.reply.getResponse();
+	}
+
+/* 	@Override
+	public void removeEndPoint(String serviceName, EndPoint endpoint) {
+		class Local {};
+		Class<?> clazz = Local.class;
+		Serializable[] paramValues = { serviceName, endpoint };
+		this.prepare(clazz, paramValues);
+		this.getInvocation().setRemoteClassName(this.className);
+		this.reply = this.request();
+	} */
+
+	@Override
+	public void unbind(String serviceName, EndPoint endpoint) {
+		class Local {};
+		Class<?> clazz = Local.class;
+		Serializable[] paramValues = { serviceName, endpoint };
+		this.prepare(clazz, paramValues);
+		this.getInvocation().setRemoteClassName(this.className);
+		this.reply = this.request();
 	}
 }

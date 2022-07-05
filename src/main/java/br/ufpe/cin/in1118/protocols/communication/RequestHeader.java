@@ -72,7 +72,7 @@ public class RequestHeader implements Serializable{
 	}
 
 	public String getOperation() {
-		return operation;
+		return this.operation;
 	}
 
 	public void setOperation(String operation) {

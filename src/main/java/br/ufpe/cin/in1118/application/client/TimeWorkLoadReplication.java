@@ -19,41 +19,72 @@ import br.ufpe.cin.in1118.management.monitoring.Event;
 public class TimeWorkLoadReplication {
 
 	public static void main(String[] args) {
-		String 	host		= args[0];
-		int		port		= Integer.parseInt(args[1]);
-		int 	serviceTime	= Integer.parseInt(args[2]);
-		int		lowUsers	= Integer.parseInt(args[3]);
-		int		highUsers	= Integer.parseInt(args[4]);
-		int		reqTax		= Integer.parseInt(args[5]);
-		String	scenario	= args[6];
+		String host = args[0];
+		int port = Integer.parseInt(args[1]);
+		int serviceTime = Integer.parseInt(args[2]);
+		int lowUsers = Integer.parseInt(args[3]);
+		int highUsers = Integer.parseInt(args[4]);
+		String scenario = args[5];
+		int interval = Integer.parseInt(args[6]);
 
-		NamingStub	naming	= new NamingStub(host, port);
-		DelayStub	delay	= (DelayStub) naming.lookup("delay");
+		NamingStub naming = new NamingStub(host, port);
+		DelayStub delay = (DelayStub) naming.lookup("delay");
 
-		//ramp up
-		System.out.println("\n\n[TimeWorkLoadReplication] stating ramp up");
-		for(int i = 0; i < 50; i++)
-			delay.delay(1);
+		// ramp up
+		System.out.println("\n\n[TimeWorkLoadReplication:34] **** Stating ramp up ****");
+		for (int i = 0; i < 100; i++)
+			delay.delay(100);
 
-		ExecutorService	es = Executors.newFixedThreadPool(512);
-		System.out.println("[TimeWorkLoadReplication] starting " + lowUsers + " users.");
-		
-		for(int i = 0; i < lowUsers; i++){
-			es.execute(new SenderRunner(reqTax, serviceTime, 600000, host, port, false));
+		ExecutorService es = Executors.newFixedThreadPool(512);
+		System.out.println("[TimeWorkLoadReplication:39] starting " + lowUsers + " users.");
+
+		long startTime = System.currentTimeMillis();
+
+		for (int i = 0; i < lowUsers; i++) {
+			es.execute(new SenderRunner(delay, serviceTime, 1800000, interval, false));
+			Thread.currentThread();
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				System.err.println("[TimeWorkloadReplication:49] Thread sleeping error");
+			}
+			//es.execute(new SenderRunner(delay, serviceTime, 840000, interval, false));
+			//es.execute(new SenderRunner(reqTax, serviceTime, 600000, host, port, false));
 		}
 		
-		Thread.currentThread();
-		try {
-			Thread.sleep(120000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		do{
+			System.out.println("[TimeWorkLoadReplication:50] sleeping for 60 s ");
+			long rectionTime = System.currentTimeMillis();
+			Thread.currentThread();
+			try {
+				Thread.sleep(60000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			System.out.println("[TimeWorkLoadReplication:58] starting more " + (highUsers - lowUsers) + " users.");
+			
+			for(int i = 0; i < (highUsers - lowUsers); i++){
+				es.execute(new SenderRunner(delay, serviceTime, 180000, interval, false));
+				Thread.currentThread();
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					System.err.println("[TimeWorkloadReplication:49] Thread sleeping error");
+				}
+				//es.execute(new SenderRunner(delay, serviceTime, 240000, interval, false));
+			}
+			
+			Thread.currentThread();
+			try {
+				Thread.sleep(300000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			System.out.println("[TimeWorkLoadReplication:63] finishing a reaction lap: " + (System.currentTimeMillis()-rectionTime)/1000.0 + " s");
+		} while((System.currentTimeMillis() - startTime) <= 1800000);
 		
-		System.out.println("[TimeWorkLoadReplication] starting " + (highUsers - lowUsers) + " users.");
-		
-		for(int i = 0; i < (highUsers - lowUsers); i++){
-			es.execute(new SenderRunner(reqTax, serviceTime, 480000, host, port, false));
-		}
 		//finalizing experiment
 		es.shutdown();
 		try {
@@ -62,6 +93,7 @@ public class TimeWorkLoadReplication {
 			e1.printStackTrace();
 		}
 		
+		System.out.println("\n[TimeWorkLoadReplication:78] Total time: " + (System.currentTimeMillis() - startTime)/1000.0 + "s\n");
 		Collections.sort(SenderRunner.elapsedTimes, new Comparator<Event>() {
 			@Override
 			public int compare(Event o1, Event o2) {
@@ -69,16 +101,17 @@ public class TimeWorkLoadReplication {
 			}
 		});
 		
-		List<DataPoint> datapoints = new ArrayList<DataPoint>();
-		List<Double> times = new ArrayList<>();
-		int firstPos = 0;
+		List<DataPoint>	datapoints	= new ArrayList<DataPoint>();
+		List<Double> 	times		= new ArrayList<>();
+		int 			firstPos	= 0;
+		
 		times.add((double) SenderRunner.elapsedTimes.get(0).getElapsedTime());
 		
 		for (int i = 1; i < SenderRunner.elapsedTimes.size(); i++){
 			times.add((double) SenderRunner.elapsedTimes.get(i).getElapsedTime());
 			
 			if ((SenderRunner.elapsedTimes.get(i).getTimeStamp() -
-					SenderRunner.elapsedTimes.get(firstPos).getTimeStamp()) >= 10000){
+			SenderRunner.elapsedTimes.get(firstPos).getTimeStamp()) >= 10000){
 				DataPoint dp = new DataPoint(times);
 				dp.setData();
 				dp.setStatistics();
@@ -89,12 +122,12 @@ public class TimeWorkLoadReplication {
 			}
 		}
 		
-		System.out.println("[TimeWorkLoadReplication] Populating file...");
+		System.out.println("\n[TimeWorkLoadReplication:113] Populating file...");
 		
 		BufferedWriter bw = null;
-		File log = new File("logs/node/" + scenario + "-" + serviceTime + "ms-" + reqTax + "ReqsPerSec-" +  lowUsers + "-" + highUsers + "users.csv");
+		File log = new File("logs/" + scenario + "-" + serviceTime + "ms-" + lowUsers + "-" + highUsers + "users.csv");
 		if (!log.exists()){
-			System.out.println("[TimeWorkLoadReplication] File does not exist. Creating file...");
+			System.out.println("\n[TimeWorkLoadReplication:118] File does not exist. Creating file...");
 			try {
 				log.createNewFile();
 				bw = new BufferedWriter(new FileWriter(log, true));
@@ -107,21 +140,21 @@ public class TimeWorkLoadReplication {
 		}
 		
 		try {
-				bw = new BufferedWriter(new FileWriter(log, true));
+			bw = new BufferedWriter(new FileWriter(log, true));
+			
+			for(int i = 0; i < datapoints.size(); i++){
+				System.out.println("\n[TimeWorkLoadReplication:134] elapsed time "
+				+ (i + 1)*10 + " s = "
+				+ datapoints.get(i).getAverage());
 				
-				for(int i = 0; i < datapoints.size(); i++){
-					System.out.println("[TimeWorkLoadReplication] elapsed time "
-							+ (i + 1)*10 + " min = "
-							+ datapoints.get(i).getAverage());
-
-					bw.write((i + 1)*10 + ";" + datapoints.get(i).getAverage());
-					bw.newLine();
-				}
-				bw.close();
-			} catch (IOException e) {
-
-				e.printStackTrace();
+				bw.write((i + 1)*10 + ";" + datapoints.get(i).getAverage());
+				bw.newLine();
 			}
+			bw.close();
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
 		System.exit(0);
 	}
 }

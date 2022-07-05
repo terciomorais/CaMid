@@ -4,15 +4,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import br.ufpe.cin.in1118.protocols.communication.Message;
 
 public class ClientRequestHandler {
 
 	private static ClientRequestHandler	INSTANCE;
-	private ExecutorService executor = Executors.newFixedThreadPool(512);
+	private ExecutorService handlerPool = Executors.newFixedThreadPool(512);
 
 	private ClientRequestHandler(){};
+	
 	public static synchronized ClientRequestHandler getInstance() {
 		if(INSTANCE == null) {
 			INSTANCE = new ClientRequestHandler();
@@ -23,7 +25,7 @@ public class ClientRequestHandler {
 	public Message submit(ClientSender clientSender) {
 		Message response = null;
 		
-		Future<Message> futureMsg = executor.submit(clientSender);
+		Future<Message> futureMsg = handlerPool.submit(clientSender);
 		
 		try {
 			response = futureMsg.get();
@@ -42,9 +44,14 @@ public class ClientRequestHandler {
 		}
 		return response;
 	}
+	public int getActiveConn() {
+		return ((ThreadPoolExecutor) handlerPool).getActiveCount();
+	}
 
 	public void close(){
-		executor.shutdown();
+
+
+		handlerPool.shutdown();
 		INSTANCE = null;
 	}
 }

@@ -42,7 +42,7 @@ public class Requestor implements Serializable{
 		ClientSender clientSender = new ClientSender(inv.getHostIP(), inv.getPort(), messageToBeMarshelled);
 
 		replyUnmarshalled = clientRequestHandler.submit(clientSender);
-				reply = new ReplyDescriptor();
+		reply = new ReplyDescriptor();
 		reply.setStatus(replyUnmarshalled.getStatus());
 		reply.setStatusMessage(replyUnmarshalled.getStatusMessage());
 		

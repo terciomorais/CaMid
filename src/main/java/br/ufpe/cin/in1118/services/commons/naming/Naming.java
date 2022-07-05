@@ -39,43 +39,72 @@ public class Naming implements INaming {
 		if(!this.repository.containsKey(serviceName))
 			this.repository.put(serviceName, namingRecord);
 		this.repository.get(serviceName).addRemoteEndPoint(namingRecord.getStub().getEndpoint());
-		System.out.println(" ------------------------------------");
+/* 		System.out.println("-------------------------------------");
 		System.out.println("| [Naming] registering service: " + serviceName);
 		System.out.println("|         " + this.repository.get(serviceName).getEndPoints().size() + " instances");
 		for(EndPoint endpoint : this.repository.get(serviceName).getEndPoints())
 			System.out.println("|         endpoint: " + endpoint.getEndpoint());
-		System.out.println(" ------------------------------------");
+		System.out.println("-------------------------------------"); */
 	}
 	
-	public void removeEndPoint(String serviceName, EndPoint endPoint){
-		//this.repository.remove(serviceName);
+	private void removeEndPoint(String serviceName, EndPoint endpoint){
+		if(this.repository.containsKey(serviceName)){
+			this.repository.get(serviceName).removeRemoteEndPoint(endpoint.getEndpoint());
+/* 			System.out.println("\n-------------------------------------");
+			System.out.println("| [Naming] removing endpoint of the service: " + serviceName);
+			System.out.println("|         " + this.repository.get(serviceName).getEndPoints().size() + " instances");
+			for(EndPoint ep : this.repository.get(serviceName).getEndPoints())
+				System.out.println("|         endpoint: " + ep.getEndpoint());
+			System.out.println("-------------------------------------\n"); */
+
+		}
 	}
 	
 	@Override
-	public void bind(String serviceName, Stub stub)
-			throws UnknownHostException, IOException, Throwable {
+	public void bind(String serviceName, Stub stub) throws UnknownHostException, IOException, Throwable {
 		NameRecord nameRecord = new NameRecord(stub);
 		this.add(serviceName, nameRecord);
 		if (!(serviceName.equals("management") || serviceName.equals("forward"))
 				&& this.isFrontEndEnabled
-				&& Network.isReachable(this.feHost, 5000)){
+				&& Network.isReachable(this.feHost, 1000)){
 			if(this.domainManager == null)
 				this.domainManager = (CloudManagerServiceStub) this.lookup("management");
-			
-			DispatcherThread dispatcher = new DispatcherThread(this.domainManager, serviceName, this.repository);
+			this.domainManager.setForwarded(false);
+			DispatcherThread dispatcher = new DispatcherThread(this.domainManager, serviceName, this.repository, "addService", null);
 			Broker.getExecutorInstance().execute(dispatcher);
 		}
 	}
 	
-	public synchronized void unbind(String serviceName){
-		this.repository.remove(serviceName);
+	public void unbind(String serviceName, EndPoint endpoint) throws UnknownHostException, IOException, Throwable {
+		if (!(serviceName.equals("management") || serviceName.equals("forward"))
+					&& this.isFrontEndEnabled
+					&& Network.isReachable(this.feHost, 1000)){
+			if(this.domainManager == null){
+				this.domainManager = (CloudManagerServiceStub) this.lookup("management");
+				this.domainManager.setForwarded(false);
+			}
+
+			if(this.repository.containsKey(serviceName) && endpoint != null && this.repository.get(serviceName).hasReplicas()) {
+				this.removeEndPoint(serviceName, endpoint);
+				DispatcherThread dispatcher = new DispatcherThread(this.domainManager, serviceName, this.repository, "removeEndPoint", endpoint);
+				Broker.getExecutorInstance().execute(dispatcher);
+	
+			} else if(this.repository.containsKey(serviceName) && !this.repository.get(serviceName).hasReplicas()){
+				this.repository.remove(serviceName);
+				DispatcherThread dispatcher = new DispatcherThread(this.domainManager, serviceName, this.repository, "removeService", null);
+				Broker.getExecutorInstance().execute(dispatcher);
+			}
+		}
 	}
 	
 	@Override
 	public Stub lookup(String serviceName) throws UnknownHostException,
 			IOException, Throwable {
 		NameRecord nr = this.repository.get(serviceName);
-		return nr.getStub();	
+		if (nr != null && nr.getStub() != null)
+			return nr.getStub();
+		else
+			return null;
 	}
 
 	@Override

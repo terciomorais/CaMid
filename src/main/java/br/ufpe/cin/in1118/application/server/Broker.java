@@ -42,67 +42,44 @@ public class Broker {
 		this.serverHost		= Network.recoverAddress("localhost");
 		this.serverPort		= Integer.parseInt((String)Broker.systemProps.getProperties().get("port_number"));
 		ROLE				= (String) Broker.systemProps.getProperties().get("role");
-
+		
 		if(ROLE.equals("frontend")){
 			
 			String host		= (String) Broker.systemProps.getProperties().get("naming_host");
 			int	portNumber	= Integer.parseInt((String) Broker.systemProps.getProperties().get("naming_port"));
 			this.feHost		= this.serverHost;
 			this.fePort		= this.serverPort;
-
+			
 			Broker.registry	= LocalServiceRegistry.createDefault();
 			Broker.naming	= new NamingStub(host, portNumber);
-
+			
 		} else if(ROLE.equals("registry")){
 			String frontend = (String) Broker.systemProps.getProperties().get("frontend");
 			this.feEnabled	= frontend.equals("enabled") ? true : false;
 			this.feHost		= Network.recoverAddress((String) Broker.systemProps.getProperties().get("frontend_host"));
 			this.fePort		= Integer.parseInt((String) Broker.systemProps.getProperties().get("frontend_port"));
-
+			
 			Broker.registry	= LocalServiceRegistry.createDefault();
 			Broker.naming = new NamingStub(this.serverHost, this.serverPort);
-
 		} else {
 			String frontend = (String) Broker.systemProps.getProperties().get("frontend");
 			this.feEnabled	= frontend.equals("enabled") ? true : false;
 			this.feHost		= Network.recoverAddress((String) Broker.systemProps.getProperties().get("frontend_host"));
 			this.fePort		= Integer.parseInt((String)	Broker.systemProps.getProperties().get("frontend_port"));
-
+			
 			String host		= (String) Broker.systemProps.getProperties().get("naming_host");
 			int	portNumber	= Integer.parseInt((String) Broker.systemProps.getProperties().get("naming_port"));
-
+			
 			Broker.registry	= LocalServiceRegistry.createDefault();
 			Broker.naming	= new NamingStub(host, portNumber);
 		}
 
-		// if (ROLE.equals("application") || ROLE.equals("registry")){//(Broker.systemProps.getProperties().containsKey("frontend")){
-		// 	String frontend = (String) Broker.systemProps.getProperties().get("frontend");
-		// 	this.feEnabled	= frontend.equals("enabled") ? true : false;
-		// 	this.feHost		= Network.recoverAddress((String)
-		// 			Broker.systemProps.getProperties().get("frontend_host"));
-		// 	this.fePort		= Integer.parseInt((String) 
-		// 			Broker.systemProps.getProperties().get("frontend_port"));
-		// }
-
-		// if(!ROLE.equals("registry")){
-		// 	Broker.registry	= LocalServiceRegistry.createDefault();
-		// 	String host		= (String) Broker.systemProps.getProperties().get("naming_host");
-		// 	int	portNumber	= 
-		// 			Integer.parseInt((String) Broker.systemProps.getProperties().get("naming_port"));
-
-		// 	Broker.naming	= new NamingStub(host, portNumber);
-		// }
-
-		//Enabling management
-		if(((String)Broker.systemProps.getProperties().get("system_monitor")).equals("enable")
-				|| ((String)Broker.systemProps.getProperties().get("object_monitor")).equals("enable")){
-			this.setManagerEnabled(true);
-			String service = "NodeManagerService".toLowerCase() + '@' + Network.recoverAddress("localhost");
-			try {
-				Broker.registry.addService(service, Class.forName("br.ufpe.cin.in1118.management.node.NodeManagerService"));
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
+		this.setManagerEnabled();
+		String service = "NodeManagerService".toLowerCase() + '@' + Network.recoverAddress("localhost");
+		try {
+			Broker.registry.addService(service, Class.forName("br.ufpe.cin.in1118.management.node.NodeManagerService"));
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -154,8 +131,17 @@ public class Broker {
 		return this.managerEnabled;
 	}
 
-	public void setManagerEnabled(boolean managerEnabled) {
-		this.managerEnabled = managerEnabled;
+	public void setManagerEnabled() {
+		if(Broker.getSystemProps().getProperties().containsKey("system_monitor")
+			&& Broker.getSystemProps().getProperties().containsKey("object_monitor")){
+				boolean sm = ((String) Broker.getSystemProps().getProperties().get("system_monitor")).equals("enable")
+				? true : false;
+				boolean om = ((String) Broker.getSystemProps().getProperties().get("object_monitor")).equals("enable")
+				? true : false;
+				this.managerEnabled = sm || om;
+		} else {
+			this.managerEnabled = false;
+		}
 	}
 
 	public static ExecutorService getExecutorInstance(){
@@ -217,9 +203,9 @@ public class Broker {
 			try {
 				String className = Broker.registry.getRemoteObjectClass(serviceName).getSimpleName();
 				Class<?> clazz = Broker.getStub(className);
-				System.out.println("[Broker] Registering service "
+				System.out.println("[Broker:207] Registering service "
 						+ serviceName + ": " + clazz.getCanonicalName());
-				Broker.publishService(serviceName,clazz, fe_en, fe_host, fe_port,serverHost, serverPort);
+				Broker.publishService(serviceName, clazz, fe_en, fe_host, fe_port, serverHost, serverPort);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (SecurityException e) {
@@ -233,8 +219,17 @@ public class Broker {
 	public static LocalServiceRegistry getRegistry(){
 		return Broker.registry;
 	}
+
 	public static Class<?> getStub(String className) throws ClassNotFoundException {
-		return Class.forName("br.ufpe.cin.in1118.distribution.stub." + className + "Stub");
+		if(className.startsWith("br.ufpe.cin.in1118.distribution.stub.") && className.endsWith("Stub")){
+			return Class.forName(className);
+		} else if(className.endsWith("Stub")){
+			return Class.forName("br.ufpe.cin.in1118.distribution.stub." + className);
+		} else if(className.startsWith("br.ufpe.cin.in1118.distribution.stub.")){
+			return Class.forName(className + "Stub");
+		} else {
+			return Class.forName("br.ufpe.cin.in1118.distribution.stub." + className + "Stub");
+		}
 	}
 
 	public static void publishService(String serviceName, Class<?> clazz, boolean fe_en, String fe_host, int fe_port, String serverHost, int serverPort){
@@ -296,7 +291,6 @@ public class Broker {
 	}
 
 	private void startManagement(){
-		if(this.isManagerEnabled()){
 			this.setNodeManager(NodeManager.getInstance());
 			if(((String)Broker.systemProps.getProperties().get("system_monitor")).equals("enable"))
 				this.getNodeManager().setSysMonitorEnabled(true);
@@ -307,17 +301,20 @@ public class Broker {
 			}
 
 			//Registering observers for all services.
-			if(Broker.ROLE.equals("registry"))
+			if(Broker.ROLE.equals("registry") && this.isManagerEnabled()){
+				System.out.println("\n ------------------------------------------------------------------------------");
 				EventSourceFactory.getInstance().registerObserver(Naming.class.getName(), new Agent());
-			else {
-				Set<String> services = Broker.registry.getAllServiceNames();	
-				for(String str : services)
-					EventSourceFactory.getInstance().registerObserver(Broker.registry.getRemoteObjectClass(str).getName(), new Agent(str));
+				System.out.println(" ------------------------------------------------------------------------------\n");
+			} else {
+				Set<String> services = Broker.registry.getAllServiceNames();
+				System.out.println("\n ------------------------------------------------------------------------------");	
+				for(String str : services){
+					if(!str.toLowerCase().contains("manage") && !str.toLowerCase().contains("naming"))
+						EventSourceFactory.getInstance().registerObserver(Broker.registry.getRemoteObjectClass(str).getName(), new Agent(str));
+				}
+				System.out.println(" ------------------------------------------------------------------------------\n");
 			}
-
-			//this.nodeManager.getObjectMonitor().setAgents(EventSourceFactory.getInstance().getObservers());
 			this.getNodeManager().start();
-		}
 	}
 
 	public void start () {
@@ -325,9 +322,9 @@ public class Broker {
 		try {	
 			if(this.server == null){
 				this.server = new ServerSocket(this.serverPort);
-				System.out.println("[Broker] " + ROLE
-						+ " server running and listening on port "
-						+ this.serverPort);
+				System.out.println("\n =================================================================");
+				System.out.println("|| [Broker:328] " + ROLE + " server running and listening on port " + this.serverPort + "||");
+				System.out.println(" =================================================================\n");
 			}
 
 			this.startManagement();

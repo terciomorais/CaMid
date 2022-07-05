@@ -7,7 +7,7 @@ import java.util.List;
 public class DataPoint implements Serializable{
 	private static final long serialVersionUID = -7071323912334870781L;
 	
-	private double average = 0;
+	private double	average				= 0;
 	private double	lowerValue			= 0;
 	private double	higherValue			= 0;
 	private double	standardDeviation	= 0;
@@ -101,6 +101,19 @@ public class DataPoint implements Serializable{
 		return sum;
 	}
 
+	public double getThroughput(){
+/* 		System.out.println("[DataPoint:105] Throughput calculus");
+		System.out.println("[DataPoint:106]     first timestamp     " + this.getBeginTimeStamp());
+		System.out.println("[DataPoint:107]     last timestamp      " + this.getEndTimeStamp());
+		System.out.println("[DataPoint:107]     time                " + (this.getEndTimeStamp() - this.getBeginTimeStamp())/1000.0);
+		System.out.println("[DataPoint:108]     success invocations " + this.getSuccessCount()); */
+		if((this.getEndTimeStamp() - this.getBeginTimeStamp()) > 0){
+			double time = (double)(this.getEndTimeStamp() - this.getBeginTimeStamp())/1000.0;
+			return this.getSuccessCount()/time;
+		} else
+			return -1;
+	}
+
 	public void setSum(double sum) {
 		this.sum = sum;
 	}
@@ -129,7 +142,6 @@ public class DataPoint implements Serializable{
 	public void setStatistics(){
 		if(this.metrics != null){
 			int sucessCount = (this.count - this.failCount);
-			//System.out.println("[DataPoint-129] Average " + this.sum + " / " + sucessCount);
 			this.average = (Double.isNaN(this.sum/sucessCount)||Double.isInfinite(this.sum/sucessCount)) ? 0.0 : (this.sum/sucessCount);
 			this.standardDeviation = Math.sqrt((this.squareSum - (this.sum * this.sum/sucessCount))/(sucessCount - 1));
 			this.standardDeviation = (Double.isNaN(this.standardDeviation) || Double.isInfinite(this.standardDeviation)) ? 0.0 : this.standardDeviation;

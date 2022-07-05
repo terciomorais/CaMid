@@ -1,17 +1,59 @@
 package tests;
 
-import java.net.InetAddress;
+import java.util.Iterator;
+
 import org.opennebula.client.Client;
-import org.opennebula.client.ClientConfigurationException;
-import org.opennebula.client.OneResponse;
+import org.opennebula.client.host.HostPool;
 import org.opennebula.client.vm.VirtualMachine;
+import org.opennebula.client.vm.VirtualMachinePool;
+
+import br.ufpe.cin.in1118.utils.Network;
 
 public class OpennebulaTest {
 	private static String ONE_AUTH = "oneadmin:gfads!@#";
-	private static String ONE_XMLRPC = "http://10.66.66.6:2633/RPC2";
+	private static String ONE_XMLRPC = "http://10.66.67.2:2633/RPC2";
+
 	public static void main(String[] args) {
-		// 
+		
 		try {
+			Client oneClient = new Client(ONE_AUTH, ONE_XMLRPC);
+
+			HostPool hp = new HostPool(oneClient);
+			
+			VirtualMachinePool vmp = new VirtualMachinePool(oneClient);
+			
+			//System.out.println(">>> " + vmp.info().getMessage());
+			hp.info();
+			System.out.println("Número de hosts " + hp.getLength());
+			vmp.info();
+			System.out.println(" Número de VMs " + vmp.getLength());
+			Iterator<VirtualMachine> it = vmp.iterator();
+			while (it.hasNext()) {
+				VirtualMachine vm = it.next();
+				String xml = vm.info().getMessage();
+				String ip = xml.substring(xml.indexOf("<ETH0_IP>") + 18, xml.indexOf("</ETH0_IP>") - 3);
+				System.out.println("VM id: " + vm.getId()
+					+ "\nIP: " + xml.substring(xml.indexOf("<ETH0_IP>") + 18, xml.indexOf("</ETH0_IP>") - 3)
+					+ "\nStatus " + vm.status());
+				if(vm.status().equals("unde")){
+					long iniTime = System.currentTimeMillis();
+					vm.resume();
+					while(!vm.status().equals("runn") || !Network.isReachable(ip, 100)){
+						Thread.currentThread();
+						Thread.sleep(100);
+						vm.info();
+					}
+					System.out.println("[OpennebulaTest:42] Time to resume " + (System.currentTimeMillis() - iniTime) + " ms");
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			System.exit(0);
+		}
+	}
+}
+/* 		try {
 			long init = System.currentTimeMillis();
 			Client oneClient = new Client(ONE_AUTH, ONE_XMLRPC);
 			VirtualMachine vm = new VirtualMachine(4,oneClient);
@@ -35,6 +77,5 @@ public class OpennebulaTest {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-	}
-}
+		} */
+

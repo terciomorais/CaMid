@@ -69,6 +69,7 @@ public class NodeManager {
 	public Analyser getSystemAnalyser() {
 		return this.systemAnalyser;
 	}
+	
 	//TODO Change communication to messaging
 	public void alert(short alert){
 		if(Broker.getSystemProps().getProperties().containsKey("dm_host") && Broker.getSystemProps().getProperties().containsKey("dm_port")){

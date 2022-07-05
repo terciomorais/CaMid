@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import br.ufpe.cin.in1118.application.server.Broker;
 import br.ufpe.cin.in1118.distribution.frontend.Forwarder;
 import br.ufpe.cin.in1118.protocols.communication.Message;
 import br.ufpe.cin.in1118.protocols.communication.MessageBody;
@@ -68,15 +69,17 @@ public class Invoker {
 
 	public Message invoke() {
 		//Checks if message should be processed locally or forwarded
-		if(this.inUnmarshalledMessage.getHeader().getMagic().equals("forward")){
+		if(Broker.getROLE().equals("frontend") && this.inUnmarshalledMessage.getHeader().getMagic().equals("forward")){
 
 			Forwarder forwarder = new Forwarder();
 			this.outUnmarshalledMessage = forwarder.forward(this.inUnmarshalledMessage);
 
 		} else {
+			//System.out.println("\n[Invoker: 78] Entering on non forward " + this.inUnmarshalledMessage.getHeader().getMagic());
 
 			String remoteObjectType	=
 					this.inUnmarshalledMessage.getBody().getRequestHeader().getContext();
+
 			Parameter[] parameters	=
 					this.inUnmarshalledMessage.getBody().getRequestBody().getParameters();
 
@@ -96,9 +99,9 @@ public class Invoker {
 					remoteObject = Class.forName(remoteObjectType).newInstance();
 
 				Method met = this.searchMethod(this.inUnmarshalledMessage);
-				if(paramValues.length == 0)
+				if(paramValues.length == 0){
 					reply.setResponse((Serializable) met.invoke(remoteObject));
-				else {
+				}else {
 					reply.setResponse((Serializable) met.invoke(remoteObject, (Object[])paramValues));
 				}
 				reply.setStatus(Message.ResponseStatus.SUCCESS);

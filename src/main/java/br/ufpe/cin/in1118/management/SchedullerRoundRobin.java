@@ -9,6 +9,15 @@ public class SchedullerRoundRobin implements Serializable{
 	private static final long	serialVersionUID	= 7813705391836590780L;
 	private List<EndPoint>		endPoints			= null;
 	private int 				next				= 0;
+	private int					tax					= 0;
+
+	public int getTax() {
+		return this.tax;
+	}
+
+	public void setTax(int tax) {
+		this.tax = tax;
+	}
 	
 	public SchedullerRoundRobin (List<EndPoint> endPoints){
 		this.updateEndPoint(endPoints);
@@ -32,4 +41,5 @@ public class SchedullerRoundRobin implements Serializable{
 			this.endPoints.clear();
 		this.endPoints = endPoints;
 	}
+
 }

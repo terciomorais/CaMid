@@ -10,7 +10,7 @@ import br.ufpe.cin.in1118.management.node.monitoring.SystemData;
 public class SystemDataPoint implements Serializable{
 	private static final long serialVersionUID = -5498943159499998760L;
 	
-	private DataPoint cpuUsage = new DataPoint();
+	private DataPoint 			cpuUsage	= new DataPoint();
 	private DataPoint			memUsage	=	new DataPoint();
 	private DataPoint			netRx		=	new DataPoint();
 	private DataPoint			netTx		=	new DataPoint();
