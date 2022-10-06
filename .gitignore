@@ -1,13 +1,15 @@
 # Ignore Gradle project-specific cache directory
 .gradle
 
-.vs
-.vscode
-.settings
+.vs/
+.vscode/
+.settings/
 
 # Ignore Gradle build output directory
 build
 
-bin
-auth
-gradle
+bin/
+auth/
+gradle/
+
+.project
