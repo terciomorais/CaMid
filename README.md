@@ -15,3 +15,6 @@ M-CaMid is submitted to scenarios where a multi-cloud application running in a l
 ### M-CaMid’s Services and Outcomes
 M-CaMid provides a set of services for managing communication and distribution of multi-cloud applications. M-CaMid must keep the multi-cloud application working properly, assuring its properties. At the same time, it manages the underlying infrastructure, providing efficient use of its resources.
 It is expected that M-CaMid supports the remote object invocation assuring its correct completion within an acceptable period (response time). Otherwise, the invocation can fail or take a time higher than the pre-established threshold. The undesirable requests must be detected by M-CaMid that acts over the environment through the elasticity. Elasticity management comprises monitoring and controlling resources through replication, migration and load balancing in different domains. Undesirable results are short reaction time by M-CaMid facing unwanted events (e.g., overload) and efficient workload distribution among application’s nodes. The desirable results are low overhead and error rate in remote invocation when M-CaMid’s services are activated.
+
+### Experimental Evaluation
+Details about reproducible experiments can be found in the document: 
