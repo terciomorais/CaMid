@@ -19,3 +19,4 @@ It is expected that M-CaMid supports the remote object invocation assuring its c
 ### Experimental Evaluation
  - Details about reproducible experiments can be found in the document: [Reproducible Research](https://github.com/terciomorais/CaMid/blob/master/reproducible_research.pdf)
  - Raw data gathered (metrics) during experiments can be found in [Raw data](https://github.com/terciomorais/CaMid/tree/master/stats)
+ - Scripts for running experiments are found in [scripts](https://github.com/terciomorais/CaMid/tree/master/scripts)
