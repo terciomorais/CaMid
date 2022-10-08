@@ -17,4 +17,5 @@ M-CaMid provides a set of services for managing communication and distribution o
 It is expected that M-CaMid supports the remote object invocation assuring its correct completion within an acceptable period (response time). Otherwise, the invocation can fail or take a time higher than the pre-established threshold. The undesirable requests must be detected by M-CaMid that acts over the environment through the elasticity. Elasticity management comprises monitoring and controlling resources through replication, migration and load balancing in different domains. Undesirable results are short reaction time by M-CaMid facing unwanted events (e.g., overload) and efficient workload distribution among application’s nodes. The desirable results are low overhead and error rate in remote invocation when M-CaMid’s services are activated.
 
 ### Experimental Evaluation
-Details about reproducible experiments can be found in the document: 
+ - Details about reproducible experiments can be found in the document: [Reproducible Research](https://github.com/terciomorais/CaMid/blob/master/reproducible_research.pdf)
+ - Raw data gathered (metrics) during experiments can be found in [Raw data](https://github.com/terciomorais/CaMid/tree/master/stats)
